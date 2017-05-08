@@ -1,0 +1,40 @@
+program sncExample
+double v;
+assign v to "{user}:aiExample";
+monitor v;
+
+%{
+//#include <stdlib.h>
+//#include "/opt/include/RSA_API.h"
+}%
+
+ss ss1 {
+    state init {
+	when (delay(10)) {
+
+	%{
+	/*
+	int numDev;
+	int devID[DEVSRCH_MAX_NUM_DEVICES];
+	char devSN[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_SERIAL_MAX_STRLEN];
+	char devType[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_TYPE_MAX_STRLEN];
+	ReturnStatus rs;
+	rs = DEVICE_Search(&numDev, devID, devSN, devType);
+	
+	printf("\nDevices detected: %d\n",numDev);
+	*/
+	}%
+	    printf("sncExample: Startup delay over\n");
+	} state low
+    }
+    state low {
+	when (v > 5.0) {
+	    printf("sncExample: Changing to high\n");
+	} state high
+    }
+    state high {
+	when (v <= 5.0) {
+	    printf("sncExample: Changing to low\n");
+	} state low
+    }
+}
