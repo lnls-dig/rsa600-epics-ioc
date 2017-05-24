@@ -1,41 +1,3 @@
-record(ai, "$(user):aiExample")
-{
-	field(DESC, "Analog input")
-	field(INP, "$(user):calcExample.VAL  NPP NMS")
-	field(EGUF, "10")
-	field(EGU, "Counts")
-	field(HOPR, "10")
-	field(LOPR, "0")
-	field(HIHI, "8")
-	field(HIGH, "6")
-	field(LOW, "4")
-	field(LOLO, "2")
-	field(HHSV, "MAJOR")
-	field(HSV, "MINOR")
-	field(LSV, "MINOR")
-	field(LLSV, "MAJOR")
-}
-record(calc, "$(user):calcExample")
-{
-	field(DESC, "Counter")
-	field(SCAN,"1 second")
-	field(FLNK, "$(user):aiExample")
-	field(CALC, "(A<B)?(A+C):D")
-	field(INPA, "$(user):calcExample.VAL  NPP NMS")
-	field(INPB, "9")
-	field(INPC, "1")
-	field(INPD, "0")
-	field(EGU, "Counts")
-	field(HOPR, "10")
-	field(HIHI, "8")
-	field(HIGH, "6")
-	field(LOW, "4")
-	field(LOLO, "2")
-	field(HHSV, "MAJOR")
-	field(HSV, "MINOR")
-	field(LSV, "MINOR")
-	field(LLSV, "MAJOR")
-}
 record(xxx, "$(user):xxxExample")
 {
 	field(DESC, "xxx record")
@@ -50,13 +12,163 @@ record(xxx, "$(user):xxxExample")
 	field(LSV, "MINOR")
 	field(LLSV, "MAJOR")
 }
-record(compress,"$(user):compressExample")
-{
-	field(DESC, "Circular buffer")
-	field(INP,"$(user):aiExample.VAL CP NMS")
-	field(ALG,"Circular Buffer")
-	field(NSAM,"10")
-	field(HOPR,"10")
-	field(EGU,"Counts")
+record(ao, "$(user):span"){
+  field(DESC, "Span")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100000")
+}
+
+record(ao, "$(user):freq"){
+  field(DESC, "Center frequency")
+  field(DRVH, "3000000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "500000000")
+}
+
+record(ao, "$(user):StartFreq"){
+  field(DESC, "Start sweep frequency")
+  field(DRVH, "7500000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119286695")
+  field(OUT, "$(user):StopFreq.DRVL PP")
+}
+
+record(ao, "$(user):StopFreq"){
+  field(DESC, "Stop sweep frequency")
+  field(DRVH, "7500000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+}
+
+record(ao, "$(user):SweepFreq"){
+  field(DESC, "Center sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119636695")
+  field(FLNK, "$(user):StartFreqCalc")
+}
+
+record(ao, "$(user):SweepSpan"){
+  field(DESC, "Span sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+  field(FLNK, "$(user):StartFreqCalc")
+}
+
+record(calcout, "$(user):StartFreqCalc"){
+  field(DESC, "Start sweep frequency calc")
+  field(INPA, "$(user):SweepFreq")
+  field(INPB, "$(user):SweepSpan")
+  field(CALC, "A-B/2")
+  field(OUT, "$(user):StartFreq PP")
+  field(FLNK, "$(user):StopFreqCalc")
+}
+
+record(calcout, "$(user):StopFreqCalc"){
+  field(DESC, "Stop sweep frequency calc")
+  field(INPA, "$(user):SweepFreq")
+  field(INPB, "$(user):SweepSpan")
+  field(CALC, "A+B/2")
+  field(OUT, "$(user):StopFreq PP")
+}
+
+record(ao, "$(user):SweepPoints"){
+  field(DESC, "Sweep points")
+  field(DRVH, "101")
+  field(DRVL, "1")
+  field(PREC, "0")
+  field(VAL, "25")
+}
+
+record(ao, "$(user):rbw"){
+  field(DESC, "Resolution bandwidth")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+record(ao, "$(user):vbw"){
+  field(DESC, "Virtual resolution bandwidth")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+#Trace length: 801, 2401, 4001, 8001,10401, 16001, 32001, and 64001 points
+record(mbbo, "$(user):traceLenOpt") {
+  field(DESC, "Trace length")
+  field(ZRVL, "801")
+  field(ZRST, "801")
+  field(ONVL, "2401")
+  field(ONST, "2401")
+  field(TWVL, "4001")
+  field(TWST, "4001")
+  field(THVL, "8001")
+  field(THST, "8001")
+  field(FRVL, "10401")
+  field(FRST, "10401")
+  field(FVVL, "16001")
+  field(FVST, "16001")
+  field(SXVL, "32001")
+  field(SXST, "32001")
+  field(SVVL, "64001")
+  field(SVST, "64001")
+  field(VAL, "4")
+}
+
+record(bo, "$(user):trkgenEn"){
+  field(DESC, "ON/OFF Tracking Generator output")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(bo, "$(user):getSpec"){
+  field(DESC, "Iniciate spectrum acquisition")
+}
+
+record(bo, "$(user):Sweep"){
+  field(DESC, "Iniciate sweep spectrum acquisition")
+}
+
+record(waveform, "$(user):traceAmp") {
+  field(DESC, "Spectrum trace amplitude data")
+  field(NELM, "64001")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(user):traceFreq") {
+  field(DESC, "Spectrum trace frequency data")
+  field(NELM, "64001")
+  field(FTVL, "DOUBLE")
+  field(EGU, "Hz")
+}
+
+record(waveform, "$(user):SweepAmpData") {
+  field(DESC, "Sweep amplitude data")
+  field(NELM, "101")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(user):SweepFreqData") {
+  field(DESC, "Sweep frequency data")
+  field(NELM, "101")
+  field(FTVL, "DOUBLE")
+  field(EGU, "Hz")
 }
 

@@ -13,7 +13,7 @@ rsa_registerRecordDeviceDriver pdbbase
 
 ## Load record instances
 dbLoadTemplate "db/userHost.substitutions"
-dbLoadRecords "db/dbSubExample.db", "user=joaoHost"
+dbLoadRecords "db/dbExample1.db", "user=rsa"
 
 ## Set this to see messages from mySub
 #var mySubDebug 1
@@ -25,4 +25,4 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit
 
 ## Start any sequence programs
-seq sncExample, "user=joaoHost"
+seq sncExample, "user=rsa"

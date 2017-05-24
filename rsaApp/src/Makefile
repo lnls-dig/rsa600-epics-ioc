@@ -4,7 +4,7 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 
-USR_CXXFLAGS_DEFAULT += -std=c++1y -L/opt/lib -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
+USR_CXXFLAGS_DEFAULT += -std=c++1y
 USR_LDFLAGS += -L/opt/lib -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
 USR_INCLUDES += -I/opt/include
 #=============================
@@ -94,7 +94,7 @@ ifneq ($(SNCSEQ),)
     rsa_DBD += sncExample.dbd
     rsaSupport_SRCS += sncExample.stt
     rsaSupport_LIBS += seq pv
-
+	
     rsa_LIBS += seq pv
 
 
@@ -105,6 +105,35 @@ ifneq ($(SNCSEQ),)
     sncProgram_LIBS += seq pv
     sncProgram_LIBS += $(EPICS_BASE_HOST_LIBS)
 
+	sncProgram_SYS_LIBS += UnifiedAPI
+	sncProgram_SYS_LIBS += RSA300API 
+	sncProgram_SYS_LIBS += RSA500API 
+	sncProgram_SYS_LIBS += GPMeasDSP
+	sncProgram_SYS_LIBS += BaseDSPL
+	sncProgram_SYS_LIBS += dl 
+	sncProgram_SYS_LIBS += icui18n
+	sncProgram_SYS_LIBS += icuuc
+	sncProgram_SYS_LIBS += icudata
+	sncProgram_SYS_LIBS += ippch
+	sncProgram_SYS_LIBS += ippcv
+	sncProgram_SYS_LIBS += ippdc
+	sncProgram_SYS_LIBS += ippi
+	sncProgram_SYS_LIBS += ipps
+	sncProgram_SYS_LIBS += ippvm
+	sncProgram_SYS_LIBS += ippcore
+	sncProgram_SYS_LIBS += boost_date_time
+	sncProgram_SYS_LIBS += boost_chrono
+	sncProgram_SYS_LIBS += boost_system
+	sncProgram_SYS_LIBS += boost_filesystem
+	sncProgram_SYS_LIBS += rt
+	sncProgram_SYS_LIBS += boost_thread
+	sncProgram_SYS_LIBS += boost_regex
+	sncProgram_SYS_LIBS += pthread
+	sncProgram_SYS_LIBS += udev
+	sncProgram_SYS_LIBS += usb-1.0
+	sncProgram_SYS_LIBS += ippcc
+	sncProgram_SYS_LIBS += boost_log
+	
 endif
 
 # Finally link to the EPICS Base libraries

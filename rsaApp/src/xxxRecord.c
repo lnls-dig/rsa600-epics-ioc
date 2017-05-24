@@ -82,7 +82,7 @@ static long init_record(void *precord,int pass)
     xxxRecord	*prec = (xxxRecord *)precord;
     xxxdset	*pdset;
     long	status;
-
+	/*
 	int numDev=2;
 	int devID[DEVSRCH_MAX_NUM_DEVICES];
 	char devSN[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_SERIAL_MAX_STRLEN];
@@ -91,7 +91,7 @@ static long init_record(void *precord,int pass)
 	rs = DEVICE_Search(&numDev, devID, devSN, devType);
 	
 	printf("\nDevices detected: %d\n",numDev);
-	
+	*/
 
     if (pass==0) return(0);
 
