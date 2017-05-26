@@ -10,7 +10,7 @@ foreign ssId;
 
 %{
 
-static bool spectrum_settings(double span, double rbw, double vbw, int traceLen)
+static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, int traceLen)
 {
 	ReturnStatus rs;
 
@@ -20,7 +20,7 @@ static bool spectrum_settings(double span, double rbw, double vbw, int traceLen)
 	Spectrum_Settings setSettings, getSettings;
 	setSettings.span = span;
 	setSettings.rbw = rbw;
-	setSettings.enableVBW = true;
+	setSettings.enableVBW = vbwEn;
 	setSettings.vbw = vbw;
 	setSettings.traceLength = traceLen;
 	setSettings.window = window;
@@ -32,20 +32,21 @@ static bool spectrum_settings(double span, double rbw, double vbw, int traceLen)
 	rs = SPECTRUM_GetSettings(&getSettings);
 	//printf("\nERROR: %s", DEVICE_GetErrorString(rs));
 
-	/*
+	
 	printf("\nSpan: %f\n", getSettings.span);
 	printf("\nRBW: %f\n", getSettings.rbw);
 	printf("\nVBW: %f\n", getSettings.vbw);
+	printf("\nVBW En: %s\n", getSettings.enableVBW ? "ON" : "OFF");
 	printf("\nTrace lenght: %d\n", getSettings.traceLength);
 	printf("\nStart freq: %f\n", getSettings.actualStartFreq);
 	printf("\nStop freq: %f\n", getSettings.actualStopFreq);
 	printf("\nFreq step size: %f\n", getSettings.actualFreqStepSize);
 	printf("\nFreq span: %f\n", getSettings.span);
-	*/
+	
 	
 }
 
-static bool center_freq(double freq)
+static void center_freq(double freq)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetCenterFreq(freq);
@@ -54,6 +55,18 @@ static bool center_freq(double freq)
 	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
 
 	printf("\nFrequency: %f\n", freq);
+	
+}
+
+static void ref_level(double refLevel)
+{
+	ReturnStatus rs;
+	rs = CONFIG_SetReferenceLevel(refLevel);
+	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
+	rs = CONFIG_GetReferenceLevel(&refLevel);
+	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
+
+	printf("\nRef level: %f\n", refLevel);
 	
 }
 
@@ -70,7 +83,7 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 	double freq, stepfreq;
 	freq = getSettings.actualStartFreq;
 	stepfreq = getSettings.actualFreqStepSize;
-	printf("\nFreq: %f, Step: %f\n", freq, stepfreq);
+	//printf("\nFreq: %f, Step: %f\n", freq, stepfreq);
 	
 	for (n = 0; n < 64001; n++)
 	{
@@ -78,11 +91,11 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 		if (n < traceLength)
 			freq = freq + stepfreq;
 	}
-	printf("\n\nCenter freq: %f\n\n", traceFreq[(traceLength-1)/2]);
+	//printf("\n\nCenter freq: %f\n\n", traceFreq[(traceLength-1)/2]);
 
 	//Start the trace capture.
 	rs = SPECTRUM_SetEnable(true);
-	printf("\nSPECTRUM_SetEnable: %s", DEVICE_GetErrorString(rs));
+	//printf("\nSPECTRUM_SetEnable: %s", DEVICE_GetErrorString(rs));
 
 	bool isActive = true;
 	int waitTimeoutMsec= 500;//Maximum allowable wait time for each data acquistion.
@@ -97,9 +110,9 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 
 	while(isActive)
 	{
-		printf("\nTrace %d",traceCount);
+		//printf("\nTrace %d",traceCount);
 		rs = SPECTRUM_AcquireTrace();
-		printf("\nSPECTRUM_AcquireTrace: %s", DEVICE_GetErrorString(rs));
+		//printf("\nSPECTRUM_AcquireTrace: %s", DEVICE_GetErrorString(rs));
 		//Wait for the trace to be ready.
 		rs = SPECTRUM_WaitForTraceReady(waitTimeoutMsec,&traceReady);
 		printf("\nSPECTRUM_WaitForTraceReady: %s, traceReady: %d", DEVICE_GetErrorString(rs), traceReady);
@@ -174,7 +187,7 @@ float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double*
 		seq_pvPut(ssID, SweepFreqId, SYNC);
 		numpoint++;
 	}
-
+	
 	for (n = numpoint; n < 101; n++)
 	{
 		SweepFreq[n] = SweepFreq[numpoint-1];
@@ -417,24 +430,41 @@ void init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VA
 	printf("\nSpectrum trace acquisition routine complete.\n");
 }
 
-static void trkgen_enable(int enable)
+int trkgen_enable(int enable)
 {
 	bool getenable;
-	if (enable == 1)
+	bool trkgen_aval;
+	TRKGEN_GetHwInstalled(&trkgen_aval);
+	if (trkgen_aval)
 	{
-		printf("\nTRKGEN_SetEnable(true)\n");
-		//TRKGEN_SetEnable(true);
-		SetTgEnable(true);
+		if (enable == 1)
+		{
+			printf("\nTRKGEN_SetEnable(true)\n");
+			//TRKGEN_SetEnable(true);
+			SetTgEnable(true);
+		}
+		else
+		{
+			printf("\nTRKGEN_SetEnable(false)\n");
+			//TRKGEN_SetEnable(false);
+			SetTgEnable(false);
+		}
+		GetTgEnable(&getenable);
+		printf("\nTRKGEN_GetEnable %d\n", getenable);
+		return (int)getenable;
 	}
 	else
 	{
-		printf("\nTRKGEN_SetEnable(false)\n");
-		//TRKGEN_SetEnable(false);
-		SetTgEnable(false);
+		printf("\nTracking generator hardware not installed\n");
+		return 0;
 	}
-	GetTgEnable(&getenable);
-	printf("\nTRKGEN_GetEnable %d\n", getenable);
+}
 
+void trkgen_level(double trkgenLevel)
+{
+	TRKGEN_SetOutputLevel(trkgenLevel);
+	TRKGEN_GetOutputLevel(&trkgenLevel);
+	printf("\nTracking generator level output %f dBm\n", trkgenLevel);
 }
 
 }%
@@ -454,6 +484,12 @@ assign freq to "{user}:freq";
 monitor freq;
 evflag freqFlag;
 sync freq freqFlag;
+
+double refLevel;
+assign refLevel to "{user}:refLevel";
+monitor refLevel;
+evflag refLevelFlag;
+sync refLevel refLevelFlag;
 
 double StartFreq;
 assign StartFreq to "{user}:StartFreq";
@@ -503,6 +539,12 @@ assign maxVBW to "{user}:vbw.DRVH";
 double minVBW;
 assign minVBW to "{user}:vbw.DRVL";
 
+int vbwEn;
+assign vbwEn to "{user}:vbwEn";
+monitor vbwEn;
+evflag vbwEnFlag;
+sync vbwEn vbwEnFlag;
+
 double vbw;
 assign vbw to "{user}:vbw";
 monitor vbw;
@@ -529,6 +571,12 @@ monitor trkgen;
 evflag trkgenFlag;
 sync trkgen trkgenFlag;
 
+double trkgenLevel;
+assign trkgenLevel to "{user}:trkgenLevel";
+monitor trkgenLevel;
+evflag trkgenLevelFlag;
+sync trkgenLevel trkgenLevelFlag;
+
 float traceAmp[64001];
 assign traceAmp to "{user}:traceAmp";
 
@@ -540,6 +588,8 @@ assign SweepAmp to "{user}:SweepAmpData";
 
 double SweepFreq[64001];
 assign SweepFreq to "{user}:SweepFreqData";
+
+%%Spectrum_Limits salimits;
 
 ss ss1 {
     state init {
@@ -556,7 +606,7 @@ ss ss1 {
 		rs = CONFIG_GetMaxCenterFreq(&maxCF);
 		rs = CONFIG_GetMinCenterFreq(&minCF);
 
-		Spectrum_Limits salimits;
+		//Spectrum_Limits salimits;
 		rs = SPECTRUM_GetLimits(&salimits);
 		
 		printf("\nSpectrum limits\n");
@@ -637,22 +687,27 @@ ss ss1 {
 
 	when (efTestAndClear(spanFlag)) {
 	    printf("Span change to: %f\n",span);
-	    spectrum_settings(span, rbw, vbw, traceLenMenu[traceLenOpt]);
+	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	} state opr
 
 	when (efTestAndClear(rbwFlag)) {
 	    printf("Rbw change to: %f\n",rbw);
-	    spectrum_settings(span, rbw, vbw, traceLenMenu[traceLenOpt]);
+	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	} state opr
 
 	when (efTestAndClear(vbwFlag)) {
 	    printf("Vbw change to: %f\n",vbw);
-	    spectrum_settings(span, rbw, vbw, traceLenMenu[traceLenOpt]);
+	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	} state opr
+
+	when (efTestAndClear(vbwEnFlag)) {
+	    printf("Vbw enable: %s\n",vbwEn ? "ON" : "OFF");
+	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	} state opr
 
 	when (efTestAndClear(traceLenFlag)) {
 	    printf("TraceLen change to: %d\n",traceLenMenu[traceLenOpt]);
-	    spectrum_settings(span, rbw, vbw, traceLenMenu[traceLenOpt]);
+	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	} state opr
 
 	when (efTestAndClear(freqFlag)) {
@@ -660,8 +715,18 @@ ss ss1 {
 	    center_freq(freq);
 	} state opr
 
+	when (efTestAndClear(refLevelFlag)) {
+	    printf("Reference level change to: %f\n",refLevel);
+	    ref_level(refLevel);
+	} state opr
+
 	when (efTestAndClear(trkgenFlag)) {
-		trkgen_enable(trkgen);
+		trkgen = trkgen_enable(trkgen);
+		pvPut(trkgen);
+	} state opr
+
+	when (efTestAndClear(trkgenLevelFlag)) {
+		trkgen_level(trkgenLevel);
 	} state opr
 
 	when (getSpec == 1) {

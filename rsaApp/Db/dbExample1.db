@@ -30,6 +30,15 @@ record(ao, "$(user):freq"){
   field(VAL, "500000000")
 }
 
+record(ao, "$(user):refLevel"){
+  field(DESC, "Reference level")
+  field(DRVH, "30")
+  field(DRVL, "-130")
+  field(PREC, "1")
+  field(EGU, "dBm")
+  field(VAL, "0")
+}
+
 record(ao, "$(user):StartFreq"){
   field(DESC, "Start sweep frequency")
   field(DRVH, "7500000000")
@@ -38,6 +47,7 @@ record(ao, "$(user):StartFreq"){
   field(EGU, "Hz")
   field(VAL, "119286695")
   field(OUT, "$(user):StopFreq.DRVL PP")
+  field(FLNK, "$(user):SweepStep")
 }
 
 record(ao, "$(user):StopFreq"){
@@ -84,10 +94,20 @@ record(calcout, "$(user):StopFreqCalc"){
 
 record(ao, "$(user):SweepPoints"){
   field(DESC, "Sweep points")
-  field(DRVH, "101")
+  field(DRVH, "1000")
   field(DRVL, "1")
   field(PREC, "0")
   field(VAL, "25")
+  field(FLNK, "$(user):SweepStep")
+}
+
+record(calc, "$(user):SweepStep"){
+  field(DESC, "Sweep frequency step")
+  field(INPA, "$(user):SweepPoints")
+  field(INPB, "$(user):SweepSpan")
+  field(CALC, "B/(A-1)")
+  field(EGU, "Hz")
+  field(PINI, "1")
 }
 
 record(ao, "$(user):rbw"){
@@ -99,8 +119,14 @@ record(ao, "$(user):rbw"){
   field(VAL, "100")
 }
 
+record(bo, "$(user):vbwEn"){
+  field(DESC, "ON/OFF video filter")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
 record(ao, "$(user):vbw"){
-  field(DESC, "Virtual resolution bandwidth")
+  field(DESC, "Video resolution bandwidth")
   field(DRVH, "15")
   field(DRVL, "1")
   field(PREC, "1")
@@ -127,13 +153,22 @@ record(mbbo, "$(user):traceLenOpt") {
   field(SXST, "32001")
   field(SVVL, "64001")
   field(SVST, "64001")
-  field(VAL, "4")
+  field(VAL, "0")
 }
 
 record(bo, "$(user):trkgenEn"){
   field(DESC, "ON/OFF Tracking Generator output")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
+}
+
+record(ao, "$(user):trkgenLevel"){
+  field(DESC, "Tracking generator output power")
+  field(DRVH, "-3")
+  field(DRVL, "-43")
+  field(PREC, "1")
+  field(EGU, "dBm")
+  field(VAL, "-10")
 }
 
 record(bo, "$(user):getSpec"){
