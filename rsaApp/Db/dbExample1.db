@@ -195,14 +195,14 @@ record(waveform, "$(user):traceFreq") {
 
 record(waveform, "$(user):SweepAmpData") {
   field(DESC, "Sweep amplitude data")
-  field(NELM, "101")
+  field(NELM, "1000")
   field(FTVL, "FLOAT")
   field(EGU, "dBm")
 }
 
 record(waveform, "$(user):SweepFreqData") {
   field(DESC, "Sweep frequency data")
-  field(NELM, "101")
+  field(NELM, "1000")
   field(FTVL, "DOUBLE")
   field(EGU, "Hz")
 }

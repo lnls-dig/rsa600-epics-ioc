@@ -188,7 +188,7 @@ float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double*
 		numpoint++;
 	}
 	
-	for (n = numpoint; n < 101; n++)
+	for (n = numpoint; n < 1000; n++)
 	{
 		SweepFreq[n] = SweepFreq[numpoint-1];
 		SweepAmp[n] = SweepAmp[numpoint-1];
@@ -462,9 +462,14 @@ int trkgen_enable(int enable)
 
 void trkgen_level(double trkgenLevel)
 {
-	TRKGEN_SetOutputLevel(trkgenLevel);
-	TRKGEN_GetOutputLevel(&trkgenLevel);
-	printf("\nTracking generator level output %f dBm\n", trkgenLevel);
+	bool trkgen_aval;
+	TRKGEN_GetHwInstalled(&trkgen_aval);
+	if (trkgen_aval)
+	{
+		TRKGEN_SetOutputLevel(trkgenLevel);
+		TRKGEN_GetOutputLevel(&trkgenLevel);
+		printf("\nTracking generator level output %f dBm\n", trkgenLevel);
+	}
 }
 
 }%
@@ -583,10 +588,10 @@ assign traceAmp to "{user}:traceAmp";
 double traceFreq[64001];
 assign traceFreq to "{user}:traceFreq";
 
-float SweepAmp[64001];
+float SweepAmp[1000];
 assign SweepAmp to "{user}:SweepAmpData";
 
-double SweepFreq[64001];
+double SweepFreq[1000];
 assign SweepFreq to "{user}:SweepFreqData";
 
 %%Spectrum_Limits salimits;
