@@ -62,6 +62,7 @@ static void ref_level(double refLevel)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetReferenceLevel(refLevel);
+	DEVICE_Run();
 	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
 	rs = CONFIG_GetReferenceLevel(&refLevel);
 	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
@@ -155,11 +156,50 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 
 	seq_pvPut(ssID, traceFreqId, SYNC);
 
+	rs = SPECTRUM_SetEnable(false);
 	return traceAmp[(traceLength-1)/2];
 
 	//Disconnect the device and finish up.
 	//rs = SPECTRUM_SetEnable(false);
 	
+}
+
+double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta)
+{
+	int n, peak1i, peak2i;
+	peak1i = 0;
+	peak2i = 0;	
+	float peak1, peak2;
+	peak1 = -150.0;
+	peak2 = -150.0;
+	
+	for(n = 0; n < traceLen; n++)
+	{
+		if (traceAmp[n] > peak1)
+		{
+			peak1 = traceAmp[n];
+			peak1i = n;
+		}
+	}
+
+	for(n = 0; n < traceLen; n++)
+	{
+		if (traceAmp[n] > peak2 && peak2 < peak1 && fabs(peak1i-peak2i) >= delta)
+		{
+			peak2 = traceAmp[n];
+			peak2i = n;
+		}
+	}
+
+	PeakFreq[0] = traceFreq[peak1i];
+	PeakFreq[1] = traceFreq[peak2i];
+	seq_pvPut(ssID, PeakFreqId, SYNC);
+
+	PeakAmp[0] = peak1;
+	PeakAmp[1] = peak2;
+	seq_pvPut(ssID, PeakAmpId, SYNC);
+
+	return (PeakFreq[0]-(119.016695));
 }
 
 float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, float* SweepAmp, VAR_ID SweepAmpId, double* SweepFreq, VAR_ID SweepFreqId, double startfreq, double stopfreq, int points)
@@ -467,9 +507,45 @@ void trkgen_level(double trkgenLevel)
 	if (trkgen_aval)
 	{
 		TRKGEN_SetOutputLevel(trkgenLevel);
+		DEVICE_Run();
+
 		TRKGEN_GetOutputLevel(&trkgenLevel);
 		printf("\nTracking generator level output %f dBm\n", trkgenLevel);
 	}
+}
+
+int auto_attenuation(int value)
+{
+	bool enable;
+	if (value)
+		CONFIG_SetAutoAttenuationEnable(true);
+	else
+		CONFIG_SetAutoAttenuationEnable(false);
+	
+	DEVICE_Run();
+	CONFIG_GetAutoAttenuationEnable(&enable);
+	return (int)enable;
+}
+
+double RF_attenuation(double value)
+{
+	CONFIG_SetRFAttenuator(value);
+	DEVICE_Run();
+	CONFIG_GetRFAttenuator(&value);
+	return value;
+}
+
+int pre_amplifier(int value)
+{
+	bool enable;
+	if (value)
+		CONFIG_SetRFPreampEnable(true);
+	else
+		CONFIG_SetRFPreampEnable(false);
+	
+	DEVICE_Run();
+	CONFIG_GetRFPreampEnable(&enable);
+	return (int)enable;
 }
 
 }%
@@ -588,11 +664,42 @@ assign traceAmp to "{user}:traceAmp";
 double traceFreq[64001];
 assign traceFreq to "{user}:traceFreq";
 
+float PeakAmp[2];
+assign PeakAmp to "{user}:PeakAmp";
+
+double PeakFreq[2];
+assign PeakFreq to "{user}:PeakFreq";
+
 float SweepAmp[1000];
 assign SweepAmp to "{user}:SweepAmpData";
 
 double SweepFreq[1000];
 assign SweepFreq to "{user}:SweepFreqData";
+
+int AutoAtt;
+assign AutoAtt to "{user}:AutoAtt";
+monitor AutoAtt;
+evflag AutoAttFlag;
+sync AutoAtt AutoAttFlag;
+
+double RFAtt;
+assign RFAtt to "{user}:RFAtt";
+monitor RFAtt;
+evflag RFAttFlag;
+sync RFAtt RFAttFlag;
+
+double TuneMeas;
+assign TuneMeas to "{user}:TuneMeas";
+
+int TuneDelta;
+assign TuneDelta to "{user}:TuneDelta";
+monitor TuneDelta;
+
+int PreAmp;
+assign PreAmp to "{user}:PreAmp";
+monitor PreAmp;
+evflag PreAmpFlag;
+sync PreAmp PreAmpFlag;
 
 %%Spectrum_Limits salimits;
 
@@ -734,8 +841,26 @@ ss ss1 {
 		trkgen_level(trkgenLevel);
 	} state opr
 
+	when (efTestAndClear(AutoAttFlag)) {
+		auto_attenuation(AutoAtt);
+		RFAtt = RF_attenuation(RFAtt);
+		pvPut(RFAtt);
+	} state opr
+
+	when (efTestAndClear(RFAttFlag)) {
+		RFAtt = RF_attenuation(RFAtt);
+		pvPut(RFAtt);
+	} state opr
+
+	when (efTestAndClear(PreAmpFlag)) {
+		pre_amplifier(PreAmp);
+	} state opr
+
 	when (getSpec == 1) {
 	    get_spectrum(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq));
+	    TuneMeas = tune_measurement(ssId, PeakAmp, pvIndex(PeakAmp), PeakFreq, pvIndex(PeakFreq), traceAmp, traceFreq, traceLenMenu[traceLenOpt], TuneDelta);
+	    printf("\nTune: %f\n", TuneMeas);
+	    pvPut(TuneMeas);
 	} state opr
 
 	when (Sweep == 1) {

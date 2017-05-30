@@ -18,7 +18,7 @@ record(ao, "$(user):span"){
   field(DRVL, "1")
   field(PREC, "1")
   field(EGU, "Hz")
-  field(VAL, "100000")
+  field(VAL, "700000")
 }
 
 record(ao, "$(user):freq"){
@@ -27,7 +27,7 @@ record(ao, "$(user):freq"){
   field(DRVL, "9000")
   field(PREC, "1")
   field(EGU, "Hz")
-  field(VAL, "500000000")
+  field(VAL, "119636695")
 }
 
 record(ao, "$(user):refLevel"){
@@ -193,6 +193,20 @@ record(waveform, "$(user):traceFreq") {
   field(EGU, "Hz")
 }
 
+record(waveform, "$(user):PeakAmp") {
+  field(DESC, "Spectrum peak amplitude data")
+  field(NELM, "2")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(user):PeakFreq") {
+  field(DESC, "Spectrum peak frequency data")
+  field(NELM, "2")
+  field(FTVL, "DOUBLE")
+  field(EGU, "Hz")
+}
+
 record(waveform, "$(user):SweepAmpData") {
   field(DESC, "Sweep amplitude data")
   field(NELM, "1000")
@@ -205,5 +219,37 @@ record(waveform, "$(user):SweepFreqData") {
   field(NELM, "1000")
   field(FTVL, "DOUBLE")
   field(EGU, "Hz")
+}
+
+record(ao, "$(user):TuneMeas"){
+  field(DESC, "Tune measurement")
+  field(PREC, "6")
+  field(EGU, "MHz")
+}
+
+record(ao, "$(user):TuneDelta"){
+  field(DESC, "Tune delta point between peaks")
+  field(PREC, "0")
+}
+
+record(bo, "$(user):AutoAtt"){
+  field(DESC, "ON/OFF signal path auto-attenuation")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(ao, "$(user):RFAtt"){
+  field(DESC, "RF input attenuator")
+  field(DRVH, "0")
+  field(DRVL, "-51")
+  field(PREC, "0")
+  field(EGU, "dB")
+  field(VAL, "0")
+}
+
+record(bo, "$(user):PreAmp"){
+  field(DESC, "ON/OFF RF Preamplifier")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
 }
 
