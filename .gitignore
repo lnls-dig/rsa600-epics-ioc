@@ -1,3 +1,10 @@
 CSSOPI/.*
 rsaApp/Db/O.*
 rsaApp/src/O.*
+bin
+lib
+include
+db
+dbd
+O.*/
+

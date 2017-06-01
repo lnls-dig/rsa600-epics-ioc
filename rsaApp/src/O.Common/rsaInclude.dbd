@@ -1,6 +1,0 @@
-include "base.dbd"
-include "xxxSupport.dbd"
-include "dbSubExample.dbd"
-include "rsaHello.dbd"
-include "initTrace.dbd"
-include "sncExample.dbd"
