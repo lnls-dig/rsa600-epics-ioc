@@ -71,28 +71,32 @@ static void ref_level(double refLevel)
 	
 }
 
-float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId)
+static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
 {
-	ReturnStatus rs;
+	Spectrum_Settings getSettings;
+	SPECTRUM_GetSettings(&getSettings);
 
 	int n;
-
-	Spectrum_Settings getSettings;
-	rs = SPECTRUM_GetSettings(&getSettings);
-
-	int traceLength = getSettings.traceLength;//801, 2401, 4001, 8001,10401, 16001, 32001, and 64001 points
-	double freq, stepfreq;
-	freq = getSettings.actualStartFreq;
-	stepfreq = getSettings.actualFreqStepSize;
-	//printf("\nFreq: %f, Step: %f\n", freq, stepfreq);
+	double freq = getSettings.actualStartFreq;
+	double stepfreq = getSettings.actualFreqStepSize;
+	int traceLength = getSettings.traceLength;
 	
 	for (n = 0; n < 64001; n++)
 	{
 		traceFreq[n] = freq/1000000.0;
+		traceAmp[n] = -150.0;
 		if (n < traceLength)
+		{
 			freq = freq + stepfreq;
+		}
 	}
-	//printf("\n\nCenter freq: %f\n\n", traceFreq[(traceLength-1)/2]);
+}
+
+int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int traceLength)
+{
+	ReturnStatus rs;
+
+	int n;
 
 	//Start the trace capture.
 	rs = SPECTRUM_SetEnable(true);
@@ -109,6 +113,9 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 
 	float* pTraceData = (float*)malloc(sizeof(float)*traceLength);
 
+	time_t timeSec;
+	uint64_t timeNsec;
+
 	while(isActive)
 	{
 		//printf("\nTrace %d",traceCount);
@@ -116,7 +123,7 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 		//printf("\nSPECTRUM_AcquireTrace: %s", DEVICE_GetErrorString(rs));
 		//Wait for the trace to be ready.
 		rs = SPECTRUM_WaitForTraceReady(waitTimeoutMsec,&traceReady);
-		printf("\nSPECTRUM_WaitForTraceReady: %s, traceReady: %d", DEVICE_GetErrorString(rs), traceReady);
+		//printf("\nSPECTRUM_WaitForTraceReady: %s, traceReady: %d", DEVICE_GetErrorString(rs), traceReady);
 		if(traceReady)
 		{
 			//Get spectrum trace data.
@@ -125,6 +132,8 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 			Spectrum_TraceInfo traceInfo;
 			rs = SPECTRUM_GetTraceInfo(&traceInfo);
 			//You can use this information to report any non-zero bits in AcqDataStatus word, for example.
+			REFTIME_GetTimeFromTimestamp(traceInfo.timestamp, &timeSec, &timeNsec);
+			//printf("\nsec: %d, nsec: %d\n", timeSec, timeNsec);
 			if (traceInfo.acqDataStatus != 0)
 				printf("\nTrace:%i AcqDataStatus:0x%04X\n", traceCount, traceInfo.acqDataStatus);
 			
@@ -138,18 +147,12 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 		{
 			if (traceCount == 0)
 			{
-				printf("\ninit2()\n");
+				printf("\Timeout\n");
 				rs = SPECTRUM_SetEnable(false);
 				rs = SPECTRUM_SetEnable(true);
-				//init2(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId);
 			}
 			isActive = false;
 		}
-	}
-
-	for (n = traceLength; n < 64001; n++)
-	{
-		traceAmp[n] = traceAmp[traceLength-1];
 	}
 
 	seq_pvPut(ssID, traceAmpId, SYNC);
@@ -157,14 +160,11 @@ float get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* trace
 	seq_pvPut(ssID, traceFreqId, SYNC);
 
 	rs = SPECTRUM_SetEnable(false);
-	return traceAmp[(traceLength-1)/2];
+	return (int)timeSec;
 
-	//Disconnect the device and finish up.
-	//rs = SPECTRUM_SetEnable(false);
-	
 }
 
-double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta)
+double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
 {
 	int n, peak1i, peak2i;
 	peak1i = 0;
@@ -181,25 +181,27 @@ double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* Pe
 			peak1i = n;
 		}
 	}
-
+	
 	for(n = 0; n < traceLen; n++)
 	{
-		if (traceAmp[n] > peak2 && peak2 < peak1 && fabs(peak1i-peak2i) >= delta)
+		if ((traceAmp[n] > peak2) && (traceAmp[n] < peak1) && (fabs(peak1i-n) >= delta))
 		{
 			peak2 = traceAmp[n];
 			peak2i = n;
 		}
 	}
-
+	
 	PeakFreq[0] = traceFreq[peak1i];
 	PeakFreq[1] = traceFreq[peak2i];
+	TuneMeas[0] = traceFreq[peak1i] - TuneFreq;
+	TuneMeas[1] = traceFreq[peak2i] - TuneFreq;
 	seq_pvPut(ssID, PeakFreqId, SYNC);
 
 	PeakAmp[0] = peak1;
 	PeakAmp[1] = peak2;
 	seq_pvPut(ssID, PeakAmpId, SYNC);
 
-	return (PeakFreq[0]-(119.016695));
+	return (PeakFreq[0]-PeakFreq[1]);
 }
 
 float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, float* SweepAmp, VAR_ID SweepAmpId, double* SweepFreq, VAR_ID SweepFreqId, double startfreq, double stopfreq, int points)
@@ -218,7 +220,7 @@ float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double*
 	{
 		rs = CONFIG_SetCenterFreq(freq);
 		
-		SweepAmp[numpoint] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId);
+		SweepAmp[numpoint] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId, 801);
 		SweepFreq[numpoint] = freq;
 		printf("\nFreq: %f, Amp: %f, Point: %d\n", SweepAmp[numpoint], SweepFreq[numpoint], numpoint);
 		
@@ -688,12 +690,15 @@ monitor RFAtt;
 evflag RFAttFlag;
 sync RFAtt RFAttFlag;
 
-double TuneMeas;
+double TuneMeas[2];
 assign TuneMeas to "{user}:TuneMeas";
+
+double TuneFreq;
+assign TuneFreq to "{user}:TuneFreq";
+monitor TuneFreq;
 
 int TuneDelta;
 assign TuneDelta to "{user}:TuneDelta";
-monitor TuneDelta;
 
 int PreAmp;
 assign PreAmp to "{user}:PreAmp";
@@ -702,6 +707,11 @@ evflag PreAmpFlag;
 sync PreAmp PreAmpFlag;
 
 %%Spectrum_Limits salimits;
+
+int timestamp, acqTimestamp, acqCount;
+
+double AcqTime;
+assign AcqTime to "{user}:AcqTime";
 
 ss ss1 {
     state init {
@@ -800,6 +810,7 @@ ss ss1 {
 	when (efTestAndClear(spanFlag)) {
 	    printf("Span change to: %f\n",span);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_freq_array(ssId,traceFreq, traceAmp);
 	} state opr
 
 	when (efTestAndClear(rbwFlag)) {
@@ -820,11 +831,13 @@ ss ss1 {
 	when (efTestAndClear(traceLenFlag)) {
 	    printf("TraceLen change to: %d\n",traceLenMenu[traceLenOpt]);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_freq_array(ssId,traceFreq, traceAmp);
 	} state opr
 
 	when (efTestAndClear(freqFlag)) {
 	    printf("Frequency change to: %f\n",freq);
 	    center_freq(freq);
+	    set_freq_array(ssId,traceFreq, traceAmp);
 	} state opr
 
 	when (efTestAndClear(refLevelFlag)) {
@@ -857,9 +870,20 @@ ss ss1 {
 	} state opr
 
 	when (getSpec == 1) {
-	    get_spectrum(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq));
-	    TuneMeas = tune_measurement(ssId, PeakAmp, pvIndex(PeakAmp), PeakFreq, pvIndex(PeakFreq), traceAmp, traceFreq, traceLenMenu[traceLenOpt], TuneDelta);
-	    printf("\nTune: %f\n", TuneMeas);
+	    timestamp = get_spectrum(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), traceLenMenu[traceLenOpt]);
+	    if (timestamp != acqTimestamp)
+	    {
+			acqTimestamp = timestamp;
+			AcqTime = 1000/((double)acqCount);
+			pvPut(AcqTime);
+			acqCount = 1;
+	    }
+	    else
+			acqCount++;
+			
+	    TuneDelta = ceil(3 * rbw * (traceLenMenu[traceLenOpt]-1)/ (span));
+	    pvPut(TuneDelta);
+	    tune_measurement(ssId, PeakAmp, pvIndex(PeakAmp), PeakFreq, pvIndex(PeakFreq), traceAmp, traceFreq, traceLenMenu[traceLenOpt], TuneDelta, TuneFreq, TuneMeas);
 	    pvPut(TuneMeas);
 	} state opr
 

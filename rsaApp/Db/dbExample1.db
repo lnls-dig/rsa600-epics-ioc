@@ -204,7 +204,7 @@ record(waveform, "$(user):PeakFreq") {
   field(DESC, "Spectrum peak frequency data")
   field(NELM, "2")
   field(FTVL, "DOUBLE")
-  field(EGU, "Hz")
+  field(EGU, "MHz")
 }
 
 record(waveform, "$(user):SweepAmpData") {
@@ -221,8 +221,10 @@ record(waveform, "$(user):SweepFreqData") {
   field(EGU, "Hz")
 }
 
-record(ao, "$(user):TuneMeas"){
+record(waveform, "$(user):TuneMeas") {
   field(DESC, "Tune measurement")
+  field(NELM, "2")
+  field(FTVL, "DOUBLE")
   field(PREC, "6")
   field(EGU, "MHz")
 }
@@ -230,6 +232,12 @@ record(ao, "$(user):TuneMeas"){
 record(ao, "$(user):TuneDelta"){
   field(DESC, "Tune delta point between peaks")
   field(PREC, "0")
+}
+
+record(ao, "$(user):TuneFreq"){
+  field(DESC, "Tune reference frequency")
+  field(PREC, "6")
+  field(EGU, "MHz")
 }
 
 record(bo, "$(user):AutoAtt"){
@@ -251,5 +259,11 @@ record(bo, "$(user):PreAmp"){
   field(DESC, "ON/OFF RF Preamplifier")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
+}
+
+record(ao, "$(user):AcqTime"){
+  field(DESC, "Acquisition rate")
+  field(PREC, "3")
+  field(EGU, "ms")
 }
 
