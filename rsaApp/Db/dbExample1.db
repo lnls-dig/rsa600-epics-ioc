@@ -1,17 +1,3 @@
-record(xxx, "$(user):xxxExample")
-{
-	field(DESC, "xxx record")
-	field(EGU, "Counts")
-	field(HOPR, "10")
-	field(HIHI, "8")
-	field(HIGH, "6")
-	field(LOW, "4")
-	field(LOLO, "2")
-	field(HHSV, "MAJOR")
-	field(HSV, "MINOR")
-	field(LSV, "MINOR")
-	field(LLSV, "MAJOR")
-}
 record(ao, "$(user):span"){
   field(DESC, "Span")
   field(DRVH, "15")

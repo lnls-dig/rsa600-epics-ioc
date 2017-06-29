@@ -11,10 +11,10 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install)
 # databases, templates, substitutions like this
 DB += dbExample1.db
-DB += dbExample2.db
-DB += dbSubExample.db
-DB += user.substitutions
-DB += userHost.substitutions
+#DB += dbExample2.db
+#DB += dbSubExample.db
+#DB += user.substitutions
+#DB += userHost.substitutions
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add

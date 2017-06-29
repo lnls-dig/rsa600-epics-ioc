@@ -264,10 +264,10 @@ static void init()
 	
 }
 
-void init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId)
+int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId)
 {
 	//Search for devices.
-	int numDev=2;
+	int numDev;
 	int devID[DEVSRCH_MAX_NUM_DEVICES];
 	char devSN[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_SERIAL_MAX_STRLEN];
 	char devType[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_TYPE_MAX_STRLEN];
@@ -468,8 +468,9 @@ void init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VA
 	//rs = DEVICE_Stop();
 	//rs = DEVICE_Disconnect();
 
+	return 1;
 	end:
-	printf("\nSpectrum trace acquisition routine complete.\n");
+	return 0;
 }
 
 int trkgen_enable(int enable)
@@ -713,11 +714,16 @@ int timestamp, acqTimestamp, acqCount;
 double AcqTime;
 assign AcqTime to "{user}:AcqTime";
 
+int initFlag = 0;
+
 ss ss1 {
     state init {
 	
+	when (initFlag == 1) {
+	} state opr
+
 	when (delay(0.1)) {
-		init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq));
+		initFlag = init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq));
 
 		%{
 		
@@ -799,10 +805,8 @@ ss ss1 {
 
 		//traceLen = getSettings.traceLength;
 		//pvPut(traceLen, SYNC);
-		
-	    printf("sncExample: Startup delay over\n");
 
-	} state opr
+	} state init
 
     }
     state opr {
