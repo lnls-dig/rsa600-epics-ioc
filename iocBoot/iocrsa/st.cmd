@@ -1,4 +1,4 @@
-#!../../bin/linux-x86_64/rsa
+#!../../bin/windows-x64-static/rsa
 
 ## You may have to change rsa to something else
 ## everywhere it appears in this file
@@ -13,7 +13,7 @@ rsa_registerRecordDeviceDriver pdbbase
 
 ## Load record instances
 dbLoadTemplate "db/userHost.substitutions"
-dbLoadRecords "db/dbExample1.db", "user=rsa"
+dbLoadRecords "db/dbExample1.db", "user=rsa2, DEVICE=0"
 
 ## Set this to see messages from mySub
 #var mySubDebug 1
@@ -25,4 +25,4 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit
 
 ## Start any sequence programs
-seq sncExample, "user=rsa"
+seq sncExample, "user=rsa2"

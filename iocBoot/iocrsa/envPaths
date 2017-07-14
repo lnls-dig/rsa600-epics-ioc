@@ -1,0 +1,6 @@
+epicsEnvSet("ARCH","windows-x64")
+epicsEnvSet("IOC","iocrsa")
+epicsEnvSet("TOP","C:/Users/dig/Documents/Tune/rsa600-epics-ioc")
+epicsEnvSet("SUPPORT","C:/epics/synApps_5_8/support")
+epicsEnvSet("SNCSEQ","C:/epics/synApps_5_8/support/seq-2-2-2")
+epicsEnvSet("EPICS_BASE","C:/epics/base-3.14.12.5")

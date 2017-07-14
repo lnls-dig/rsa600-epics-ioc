@@ -253,3 +253,9 @@ record(ao, "$(user):AcqTime"){
   field(EGU, "ms")
 }
 
+record(ao, "$(user):Conn"){
+  field(DESC, "Device number to connect")
+  field(PREC, "0")
+  field(VAL, "$(DEVICE)")
+}
+

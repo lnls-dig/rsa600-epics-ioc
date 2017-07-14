@@ -6,7 +6,7 @@ program sncExample
 foreign ssId;
 
 %%#include <stdlib.h>
-%%#include "/opt/include/RSA_API.h"
+%%#include "C:\\Tektronix\\RSA_API\\include\\RSA_API.h"
 
 %{
 
@@ -147,7 +147,7 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 		{
 			if (traceCount == 0)
 			{
-				printf("\Timeout\n");
+				printf("\nTimeout\n");
 				rs = SPECTRUM_SetEnable(false);
 				rs = SPECTRUM_SetEnable(true);
 			}
@@ -264,7 +264,7 @@ static void init()
 	
 }
 
-int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId)
+int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
 {
 	//Search for devices.
 	int numDev;
@@ -285,7 +285,13 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	}
 	
 	//Connect to the first device found.
-	rs = DEVICE_Connect(devID[0]);
+	if (numDev == 1)
+		rs = DEVICE_Connect(devID[0]);
+	else
+	{
+		printf("\nConnecting to %d\n", deviceID);
+		rs = DEVICE_Connect(devID[deviceID]);
+	}
 	
 	//The following is an example on how to use the return status of an API function.
 	//For simplicity, it will not be used in the rest of the program.
@@ -297,7 +303,7 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	}
 	//If there is no error connecting, then print the name of the connected device.
 	else
-		printf("\nCONNECTED TO: %s", devType[0]);
+		printf("\nCONNECTED TO: %s", devSN[deviceID]);
 	
 	// Tracking Generator Setup
 	bool trkgen_aval, trkgen_en;
@@ -716,6 +722,10 @@ assign AcqTime to "{user}:AcqTime";
 
 int initFlag = 0;
 
+int deviceID;
+assign deviceID to "{user}:Conn";
+monitor deviceID;
+
 ss ss1 {
     state init {
 	
@@ -723,7 +733,7 @@ ss ss1 {
 	} state opr
 
 	when (delay(0.1)) {
-		initFlag = init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq));
+		initFlag = init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), deviceID);
 
 		%{
 		

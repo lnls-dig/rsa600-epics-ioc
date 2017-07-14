@@ -4,22 +4,24 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 
-USR_CXXFLAGS_DEFAULT += -std=c++1y
-USR_LDFLAGS += -L/opt/lib -L/usr/lib/x86_64-linux-gnu -L/usr/local/lib
-USR_INCLUDES += -I/opt/include
+#USR_CXXFLAGS_DEFAULT += -std=c++1y
+#USR_LDFLAGS += C:\Tektronix\RSA_API\lib\x64
+#USR_LIBS += C:\Tektronix\RSA_API\lib\x64
+#LIB_RCS += C:\Tektronix\RSA_API\lib\x64\
+USR_INCLUDES += -IC:\Tektronix\RSA_API\include
 #=============================
 # Build the IOC support library
 
 LIBRARY_IOC += rsaSupport
 
 # xxxRecord.h will be created from xxxRecord.dbd
-DBDINC += xxxRecord
+#DBDINC += xxxRecord
 # Install devXxxSoft.dbd into <top>/dbd
-DBD += xxxSupport.dbd
+#DBD += xxxSupport.dbd
 
 # Compile and add the code to the support library
-rsaSupport_SRCS += xxxRecord.c
-rsaSupport_SRCS += devXxxSoft.c
+#rsaSupport_SRCS += xxxRecord.c
+#rsaSupport_SRCS += devXxxSoft.c
 
 # Link locally-provided code into the support library,
 # rather than directly into the IOC application.
@@ -38,7 +40,7 @@ DBD += rsa.dbd
 
 # rsa.dbd will be made up from these files:
 rsa_DBD += base.dbd
-rsa_DBD += xxxSupport.dbd
+#rsa_DBD += xxxSupport.dbd
 rsa_DBD += dbSubExample.dbd
 rsa_DBD += rsaHello.dbd
 rsa_DBD += initTrace.dbd
@@ -59,34 +61,37 @@ rsa_LIBS += rsaSupport
 # NOTE: To build SNL programs, SNCSEQ must be defined
 # in the <top>/configure/RELEASE file
 
-rsa_SYS_LIBS += UnifiedAPI
-rsa_SYS_LIBS += RSA300API 
-rsa_SYS_LIBS += RSA500API 
-rsa_SYS_LIBS += GPMeasDSP
-rsa_SYS_LIBS += BaseDSPL
-rsa_SYS_LIBS += dl 
-rsa_SYS_LIBS += icui18n
-rsa_SYS_LIBS += icuuc
-rsa_SYS_LIBS += icudata
-rsa_SYS_LIBS += ippch
-rsa_SYS_LIBS += ippcv
-rsa_SYS_LIBS += ippdc
-rsa_SYS_LIBS += ippi
-rsa_SYS_LIBS += ipps
-rsa_SYS_LIBS += ippvm
-rsa_SYS_LIBS += ippcore
-rsa_SYS_LIBS += boost_date_time
-rsa_SYS_LIBS += boost_chrono
-rsa_SYS_LIBS += boost_system
-rsa_SYS_LIBS += boost_filesystem
-rsa_SYS_LIBS += rt
-rsa_SYS_LIBS += boost_thread
-rsa_SYS_LIBS += boost_regex
-rsa_SYS_LIBS += pthread
-rsa_SYS_LIBS += udev
-rsa_SYS_LIBS += usb-1.0
-rsa_SYS_LIBS += ippcc
-rsa_SYS_LIBS += boost_log
+rsa_SYS_LIBS += C:\Tektronix\RSA_API\lib\x64\RSA_API
+rsa_DLL_LIBS += C:\Tektronix\RSA_API\lib\x64\RSA_API
+
+#rsa_SYS_LIBS += UnifiedAPI
+#rsa_SYS_LIBS += RSA300API 
+#rsa_SYS_LIBS += RSA500API 
+#rsa_SYS_LIBS += GPMeasDSP
+#rsa_SYS_LIBS += BaseDSPL
+#rsa_SYS_LIBS += dl
+#rsa_SYS_LIBS += icui18n
+#rsa_SYS_LIBS += icuuc
+#rsa_SYS_LIBS += icudata
+#rsa_SYS_LIBS += ippch
+#rsa_SYS_LIBS += ippcv
+#rsa_SYS_LIBS += ippdc
+#rsa_SYS_LIBS += ippi
+#rsa_SYS_LIBS += ipps
+#rsa_SYS_LIBS += ippvm
+#rsa_SYS_LIBS += ippcore
+#rsa_SYS_LIBS += boost_date_time
+# rsa_SYS_LIBS += boost_chrono
+# rsa_SYS_LIBS += boost_system
+# rsa_SYS_LIBS += boost_filesystem
+# rsa_SYS_LIBS += rt
+# rsa_SYS_LIBS += boost_thread
+# rsa_SYS_LIBS += boost_regex
+# rsa_SYS_LIBS += pthread
+# rsa_SYS_LIBS += udev
+# rsa_SYS_LIBS += usb-1.0
+# rsa_SYS_LIBS += ippcc
+# rsa_SYS_LIBS += boost_log
 
 ifneq ($(SNCSEQ),)
     # Build sncExample into rsaSupport
@@ -105,34 +110,37 @@ ifneq ($(SNCSEQ),)
     sncProgram_LIBS += seq pv
     sncProgram_LIBS += $(EPICS_BASE_HOST_LIBS)
 
-	sncProgram_SYS_LIBS += UnifiedAPI
-	sncProgram_SYS_LIBS += RSA300API 
-	sncProgram_SYS_LIBS += RSA500API 
-	sncProgram_SYS_LIBS += GPMeasDSP
-	sncProgram_SYS_LIBS += BaseDSPL
-	sncProgram_SYS_LIBS += dl 
-	sncProgram_SYS_LIBS += icui18n
-	sncProgram_SYS_LIBS += icuuc
-	sncProgram_SYS_LIBS += icudata
-	sncProgram_SYS_LIBS += ippch
-	sncProgram_SYS_LIBS += ippcv
-	sncProgram_SYS_LIBS += ippdc
-	sncProgram_SYS_LIBS += ippi
-	sncProgram_SYS_LIBS += ipps
-	sncProgram_SYS_LIBS += ippvm
-	sncProgram_SYS_LIBS += ippcore
-	sncProgram_SYS_LIBS += boost_date_time
-	sncProgram_SYS_LIBS += boost_chrono
-	sncProgram_SYS_LIBS += boost_system
-	sncProgram_SYS_LIBS += boost_filesystem
-	sncProgram_SYS_LIBS += rt
-	sncProgram_SYS_LIBS += boost_thread
-	sncProgram_SYS_LIBS += boost_regex
-	sncProgram_SYS_LIBS += pthread
-	sncProgram_SYS_LIBS += udev
-	sncProgram_SYS_LIBS += usb-1.0
-	sncProgram_SYS_LIBS += ippcc
-	sncProgram_SYS_LIBS += boost_log
+	sncProgram_SYS_LIBS += C:\Tektronix\RSA_API\lib\x64\RSA_API
+	sncProgram_DLL_LIBS += C:\Tektronix\RSA_API\lib\x64\RSA_API
+
+	# sncProgram_SYS_LIBS += UnifiedAPI
+	# sncProgram_SYS_LIBS += RSA300API 
+	# sncProgram_SYS_LIBS += RSA500API 
+	# sncProgram_SYS_LIBS += GPMeasDSP
+	# sncProgram_SYS_LIBS += BaseDSPL
+	# sncProgram_SYS_LIBS += dl 
+	# sncProgram_SYS_LIBS += icui18n
+	# sncProgram_SYS_LIBS += icuuc
+	# sncProgram_SYS_LIBS += icudata
+	# sncProgram_SYS_LIBS += ippch
+	# sncProgram_SYS_LIBS += ippcv
+	# sncProgram_SYS_LIBS += ippdc
+	# sncProgram_SYS_LIBS += ippi
+	# sncProgram_SYS_LIBS += ipps
+	# sncProgram_SYS_LIBS += ippvm
+	# sncProgram_SYS_LIBS += ippcore
+	# sncProgram_SYS_LIBS += boost_date_time
+	# sncProgram_SYS_LIBS += boost_chrono
+	# sncProgram_SYS_LIBS += boost_system
+	# sncProgram_SYS_LIBS += boost_filesystem
+	# sncProgram_SYS_LIBS += rt
+	# sncProgram_SYS_LIBS += boost_thread
+	# sncProgram_SYS_LIBS += boost_regex
+	# sncProgram_SYS_LIBS += pthread
+	# sncProgram_SYS_LIBS += udev
+	# sncProgram_SYS_LIBS += usb-1.0
+	# sncProgram_SYS_LIBS += ippcc
+	# sncProgram_SYS_LIBS += boost_log
 	
 endif
 
