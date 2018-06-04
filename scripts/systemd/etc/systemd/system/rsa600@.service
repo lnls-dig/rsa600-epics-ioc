@@ -1,0 +1,30 @@
+[Unit]
+Description=RSA600 IOC %p%I
+After=rc-local.service
+Wants=rc-local.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Source environment
+EnvironmentFile=/etc/sysconfig/rsa600-epics-ioc
+EnvironmentFile=/etc/sysconfig/rsa600-epics-ioc-mapping
+# Execute pre with root
+PermissionsStartOnly=true
+Environment=RSA600_INSTANCE=%i
+ExecStartPre=/bin/mkdir -p /var/log/procServ/%p%i
+ExecStartPre=/bin/mkdir -p /var/run/procServ/%p%i
+#WorkingDirectory=${RSA600_IOC_STARTUP}
+WorkingDirectory=/opt/epics/startup/ioc/rsa600-epics-ioc/iocBoot/iocdmm7510
+# Run procServ with IOC
+ExecStart=/bin/bash -c "\
+    export RSA600_DEVICE_TELNET_PORT_SUFFIX=RSA600_$${RSA600_INSTANCE}_PORT_SUFFIX && \
+    /usr/local/bin/procServ \
+    -f \
+    -n %p%i \
+    -i ^C^D \
+    $${PROCSERV_RSA600_PORT_PREFIX}$${!RSA600_DEVICE_TELNET_PORT_SUFFIX} \
+    ./runGenericCT.sh"
+
+[Install]
+WantedBy=multi-user.target
