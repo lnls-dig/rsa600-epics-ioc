@@ -1,0 +1,291 @@
+#---------------------------------------------------------------------
+# Title      : Tektronix RSA600  Spectrum Analyzer Epics Database File
+# Project    :
+#---------------------------------------------------------------------
+# File       : rsa.db
+# Author     : João Leandro de Brito Neto
+# Company    : Brazilian Synchrotron Light Laboratory, LNLS/CNPEM
+#---------------------------------------------------------------------
+# Copyright (c) 2018 Brazilian Synchrotron Light Laboratory, LNLS/CNPEM
+#
+# This program is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program. If not, see
+# <http://www.gnu.org/licenses/>.
+#---------------------------------------------------------------------
+# Revisions  :
+# Date          Version         Author                  Description
+# 2018-jun-11   0.0             leticiagcapovilla       Updated
+#---------------------------------------------------------------------
+#####################################################################
+
+record(ao, "$(P)$(R):span"){
+  field(DESC, "Span")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "700000")
+}
+
+record(ao, "$(P)$(R):freq"){
+  field(DESC, "Center frequency")
+  field(DRVH, "3000000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119636695")
+}
+
+record(ao, "$(P)$(R):refLevel"){
+  field(DESC, "Reference level")
+  field(DRVH, "30")
+  field(DRVL, "-130")
+  field(PREC, "1")
+  field(EGU, "dBm")
+  field(VAL, "0")
+}
+
+record(ao, "$(P)$(R):StartFreq"){
+  field(DESC, "Start sweep frequency")
+  field(DRVH, "7500000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119286695")
+  field(OUT, "$(P)$(R):StopFreq.DRVL PP")
+  field(FLNK, "$(P)$(R):SweepStep")
+}
+
+record(ao, "$(P)$(R):StopFreq"){
+  field(DESC, "Stop sweep frequency")
+  field(DRVH, "7500000000")
+  field(DRVL, "9000")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+}
+
+record(ao, "$(P)$(R):SweepFreq"){
+  field(DESC, "Center sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119636695")
+  field(FLNK, "$(P)$(R):StartFreqCalc")
+}
+
+record(ao, "$(P)$(R):SweepSpan"){
+  field(DESC, "Span sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+  field(FLNK, "$(P)$(R):StartFreqCalc")
+}
+
+record(calcout, "$(P)$(R):StartFreqCalc"){
+  field(DESC, "Start sweep frequency calc")
+  field(INPA, "$(P)$(R):SweepFreq")
+  field(INPB, "$(P)$(R):SweepSpan")
+  field(CALC, "A-B/2")
+  field(OUT, "$(P)$(R):StartFreq PP")
+  field(FLNK, "$(P)$(R):StopFreqCalc")
+}
+
+record(calcout, "$(P)$(R):StopFreqCalc"){
+  field(DESC, "Stop sweep frequency calc")
+  field(INPA, "$(P)$(R):SweepFreq")
+  field(INPB, "$(P)$(R):SweepSpan")
+  field(CALC, "A+B/2")
+  field(OUT, "$(P)$(R):StopFreq PP")
+}
+
+record(ao, "$(P)$(R):SweepPoints"){
+  field(DESC, "Sweep points")
+  field(DRVH, "1000")
+  field(DRVL, "1")
+  field(PREC, "0")
+  field(VAL, "25")
+  field(FLNK, "$(P)$(R):SweepStep")
+}
+
+record(calc, "$(P)$(R):SweepStep"){
+  field(DESC, "Sweep frequency step")
+  field(INPA, "$(P)$(R):SweepPoints")
+  field(INPB, "$(P)$(R):SweepSpan")
+  field(CALC, "B/(A-1)")
+  field(EGU, "Hz")
+  field(PINI, "1")
+}
+
+record(ao, "$(P)$(R):rbw"){
+  field(DESC, "Resolution bandwidth")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+record(bo, "$(P)$(R):vbwEn"){
+  field(DESC, "ON/OFF video filter")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(ao, "$(P)$(R):vbw"){
+  field(DESC, "Video resolution bandwidth")
+  field(DRVH, "15")
+  field(DRVL, "1")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+#Trace length: 801, 2401, 4001, 8001,10401, 16001, 32001, and 64001 points
+record(mbbo, "$(P)$(R):traceLenOpt") {
+  field(DESC, "Trace length")
+  field(ZRVL, "801")
+  field(ZRST, "801")
+  field(ONVL, "2401")
+  field(ONST, "2401")
+  field(TWVL, "4001")
+  field(TWST, "4001")
+  field(THVL, "8001")
+  field(THST, "8001")
+  field(FRVL, "10401")
+  field(FRST, "10401")
+  field(FVVL, "16001")
+  field(FVST, "16001")
+  field(SXVL, "32001")
+  field(SXST, "32001")
+  field(SVVL, "64001")
+  field(SVST, "64001")
+  field(VAL, "0")
+}
+
+record(bo, "$(P)$(R):trkgenEn"){
+  field(DESC, "ON/OFF Tracking Generator output")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(ao, "$(P)$(R):trkgenLevel"){
+  field(DESC, "Tracking generator output power")
+  field(DRVH, "-3")
+  field(DRVL, "-43")
+  field(PREC, "1")
+  field(EGU, "dBm")
+  field(VAL, "-10")
+}
+
+record(bo, "$(P)$(R):getSpec"){
+  field(DESC, "Iniciate spectrum acquisition")
+}
+
+record(bo, "$(P)$(R):Sweep"){
+  field(DESC, "Iniciate sweep spectrum acquisition")
+}
+
+record(waveform, "$(P)$(R):traceAmp") {
+  field(DESC, "Spectrum trace amplitude data")
+  field(NELM, "64001")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(P)$(R):traceFreq") {
+  field(DESC, "Spectrum trace frequency data")
+  field(NELM, "64001")
+  field(FTVL, "DOUBLE")
+  field(EGU, "Hz")
+}
+
+record(waveform, "$(P)$(R):PeakAmp") {
+  field(DESC, "Spectrum peak amplitude data")
+  field(NELM, "2")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(P)$(R):PeakFreq") {
+  field(DESC, "Spectrum peak frequency data")
+  field(NELM, "2")
+  field(FTVL, "DOUBLE")
+  field(EGU, "MHz")
+}
+
+record(waveform, "$(P)$(R):SweepAmpData") {
+  field(DESC, "Sweep amplitude data")
+  field(NELM, "1000")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
+record(waveform, "$(P)$(R):SweepFreqData") {
+  field(DESC, "Sweep frequency data")
+  field(NELM, "1000")
+  field(FTVL, "DOUBLE")
+  field(EGU, "Hz")
+}
+
+record(waveform, "$(P)$(R):TuneMeas") {
+  field(DESC, "Tune measurement")
+  field(NELM, "2")
+  field(FTVL, "DOUBLE")
+  field(PREC, "6")
+  field(EGU, "MHz")
+}
+
+record(ao, "$(P)$(R):TuneDelta"){
+  field(DESC, "Tune delta point between peaks")
+  field(PREC, "0")
+}
+
+record(ao, "$(P)$(R):TuneFreq"){
+  field(DESC, "Tune reference frequency")
+  field(PREC, "6")
+  field(EGU, "MHz")
+}
+
+record(bo, "$(P)$(R):AutoAtt"){
+  field(DESC, "ON/OFF signal path auto-attenuation")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(ao, "$(P)$(R):RFAtt"){
+  field(DESC, "RF input attenuator")
+  field(DRVH, "0")
+  field(DRVL, "-51")
+  field(PREC, "0")
+  field(EGU, "dB")
+  field(VAL, "0")
+}
+
+record(bo, "$(P)$(R):PreAmp"){
+  field(DESC, "ON/OFF RF Preamplifier")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(ao, "$(P)$(R):AcqTime"){
+  field(DESC, "Acquisition rate")
+  field(PREC, "3")
+  field(EGU, "ms")
+}
+
+record(ao, "$(P)$(R):Conn"){
+  field(DESC, "Device number to connect")
+  field(PREC, "0")
+  field(VAL, "$(DEVICE)")
+}
+
