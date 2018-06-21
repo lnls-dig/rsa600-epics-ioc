@@ -1,5 +1,5 @@
 #---------------------------------------------------------------------
-# Title      : Tektronix RSA600  Spectrum Analyzer Epics Database File
+# Title      : Tektronix RSA600 Spectrum Analyzer Epics Database File
 # Project    :
 #---------------------------------------------------------------------
 # File       : rsa.db
@@ -24,12 +24,20 @@
 #---------------------------------------------------------------------
 # Revisions  :
 # Date          Version         Author                  Description
-# 2018-jun-11   0.0             leticiagcapovilla       Updated
+# 2018-jun-11                   leticiagcapovilla       Updated
 #---------------------------------------------------------------------
 #####################################################################
 
-record(ao, "$(P)$(R):span"){
-  field(DESC, "Span")
+# Frequency Span
+record(ai, "$(P)$(R)Span-RB"){
+  field(DESC, "Get frequency span")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "700000")
+}
+
+record(ao, "$(P)$(R)Span-SP"){
+  field(DESC, "Set frequency span")
   field(DRVH, "15")
   field(DRVL, "1")
   field(PREC, "1")
@@ -37,8 +45,16 @@ record(ao, "$(P)$(R):span"){
   field(VAL, "700000")
 }
 
-record(ao, "$(P)$(R):freq"){
-  field(DESC, "Center frequency")
+# Center Frequency
+record(ai, "$(P)$(R)CenterFreq-RB"){
+  field(DESC, "Get center frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119636695")
+}
+
+record(ao, "$(P)$(R)CenterFreq-SP"){
+  field(DESC, "Set center frequency")
   field(DRVH, "3000000000")
   field(DRVL, "9000")
   field(PREC, "1")
@@ -46,8 +62,16 @@ record(ao, "$(P)$(R):freq"){
   field(VAL, "119636695")
 }
 
-record(ao, "$(P)$(R):refLevel"){
-  field(DESC, "Reference level")
+# Reference Level
+record(ai, "$(P)$(R)RefLvl-RB"){
+  field(DESC, "Get reference power level")
+  field(PREC, "1")
+  field(EGU, "dBm")
+  field(VAL, "0")
+}
+
+record(ao, "$(P)$(R)RefLvl-SP"){
+  field(DESC, "Set reference power level")
   field(DRVH, "30")
   field(DRVL, "-130")
   field(PREC, "1")
@@ -55,19 +79,44 @@ record(ao, "$(P)$(R):refLevel"){
   field(VAL, "0")
 }
 
-record(ao, "$(P)$(R):StartFreq"){
-  field(DESC, "Start sweep frequency")
+# Start Frequency
+record(ai, "$(P)$(R)StartFreq-RB"){
+  field(DESC, "Get sweep start frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119286695")
+}
+
+record(ao, "$(P)$(R)StartFreq-SP"){
+  field(DESC, "Set sweep start frequency")
   field(DRVH, "7500000000")
   field(DRVL, "9000")
   field(PREC, "1")
   field(EGU, "Hz")
   field(VAL, "119286695")
-  field(OUT, "$(P)$(R):StopFreq.DRVL PP")
-  field(FLNK, "$(P)$(R):SweepStep")
+  field(OUT, "$(P)$(R)StopFreq.DRVL PP")
+  field(FLNK, "$(P)$(R)SweStep")
 }
 
-record(ao, "$(P)$(R):StopFreq"){
-  field(DESC, "Stop sweep frequency")
+record(calcout, "$(P)$(R)CalcStartFreq"){
+  field(DESC, "Calculate sweep start frequency")
+  field(INPA, "$(P)$(R)SweFreq")
+  field(INPB, "$(P)$(R)SweSpan")
+  field(CALC, "A-B/2")
+  field(OUT, "$(P)$(R)StartFreq PP")
+  field(FLNK, "$(P)$(R)CalcStopFreq")
+}
+
+# Stop Frequency
+record(ai, "$(P)$(R)StopFreq-RB"){
+  field(DESC, "Get sweep stop frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+}
+
+record(ao, "$(P)$(R)StopFreq-SP"){
+  field(DESC, "Set sweep stop frequency")
   field(DRVH, "7500000000")
   field(DRVL, "9000")
   field(PREC, "1")
@@ -75,59 +124,82 @@ record(ao, "$(P)$(R):StopFreq"){
   field(VAL, "119986695")
 }
 
-record(ao, "$(P)$(R):SweepFreq"){
-  field(DESC, "Center sweep frequency")
+record(calcout, "$(P)$(R)CalcStopFreq"){
+  field(DESC, "Calculate sweep stop frequency")
+  field(INPA, "$(P)$(R)SweFreq")
+  field(INPB, "$(P)$(R)SweSpan")
+  field(CALC, "A+B/2")
+  field(OUT, "$(P)$(R)StopFreq PP")
+}
+
+# Sweep Frequency
+record(ai, "$(P)$(R)SweFreq-RB"){
+  field(DESC, "Get center sweep frequency")
   field(PREC, "1")
   field(EGU, "Hz")
   field(VAL, "119636695")
-  field(FLNK, "$(P)$(R):StartFreqCalc")
 }
 
-record(ao, "$(P)$(R):SweepSpan"){
-  field(DESC, "Span sweep frequency")
+record(ao, "$(P)$(R)SweFreq-SP"){
+  field(DESC, "Set center sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119636695")
+  field(FLNK, "$(P)$(R)CalcStartFreq")
+}
+
+# Sweep Span
+record(ai, "$(P)$(R)SweSpan-RB"){
+  field(DESC, "Get span sweep frequency")
   field(PREC, "1")
   field(EGU, "Hz")
   field(VAL, "119986695")
-  field(FLNK, "$(P)$(R):StartFreqCalc")
 }
 
-record(calcout, "$(P)$(R):StartFreqCalc"){
-  field(DESC, "Start sweep frequency calc")
-  field(INPA, "$(P)$(R):SweepFreq")
-  field(INPB, "$(P)$(R):SweepSpan")
-  field(CALC, "A-B/2")
-  field(OUT, "$(P)$(R):StartFreq PP")
-  field(FLNK, "$(P)$(R):StopFreqCalc")
+record(ao, "$(P)$(R)SweSpan-SP"){
+  field(DESC, "Set span sweep frequency")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "119986695")
+  field(FLNK, "$(P)$(R)CalcStartFreq")
 }
 
-record(calcout, "$(P)$(R):StopFreqCalc"){
-  field(DESC, "Stop sweep frequency calc")
-  field(INPA, "$(P)$(R):SweepFreq")
-  field(INPB, "$(P)$(R):SweepSpan")
-  field(CALC, "A+B/2")
-  field(OUT, "$(P)$(R):StopFreq PP")
+# Number of Sweep Points
+record(ai, "$(P)$(R)SwePoints-RB"){
+  field(DESC, "Get sweep points")
+  field(PREC, "0")
+  field(VAL, "25")
 }
 
-record(ao, "$(P)$(R):SweepPoints"){
-  field(DESC, "Sweep points")
+record(ao, "$(P)$(R)SwePoints-SP"){
+  field(DESC, "Set Sweep points")
   field(DRVH, "1000")
   field(DRVL, "1")
   field(PREC, "0")
   field(VAL, "25")
-  field(FLNK, "$(P)$(R):SweepStep")
+  field(FLNK, "$(P)$(R)SweStep")
 }
 
-record(calc, "$(P)$(R):SweepStep"){
-  field(DESC, "Sweep frequency step")
-  field(INPA, "$(P)$(R):SweepPoints")
-  field(INPB, "$(P)$(R):SweepSpan")
+# Sweep Frequency Step
+record(calc, "$(P)$(R)CalcSweStep"){
+  field(DESC, "Calculate sweep frequency step")
+  field(INPA, "$(P)$(R)SwePoints")
+  field(INPB, "$(P)$(R)SweSpan")
   field(CALC, "B/(A-1)")
   field(EGU, "Hz")
   field(PINI, "1")
 }
 
-record(ao, "$(P)$(R):rbw"){
-  field(DESC, "Resolution bandwidth")
+# Resolution Bandwidth
+record(ai, "$(P)$(R)Rbw-RB"){
+  field(DESC, "Get resolution bandwidth")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+record(ao, "$(P)$(R)Rbw-SP"){
+  field(DESC, "Set resolution bandwidth")
   field(DRVH, "15")
   field(DRVL, "1")
   field(PREC, "1")
@@ -135,14 +207,29 @@ record(ao, "$(P)$(R):rbw"){
   field(VAL, "100")
 }
 
-record(bo, "$(P)$(R):vbwEn"){
+# Enable/Disable Video Filter
+record(bi, "$(P)$(R)EnblVbw-Sts"){
   field(DESC, "ON/OFF video filter")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
 }
 
-record(ao, "$(P)$(R):vbw"){
-  field(DESC, "Video resolution bandwidth")
+record(bo, "$(P)$(R)EnblVbw-Sel"){
+  field(DESC, "ON/OFF video filter")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+# Video Resolution Bandwidth
+record(ai, "$(P)$(R)Vbw-RB"){
+  field(DESC, "Get video resolution bandwidth")
+  field(PREC, "1")
+  field(EGU, "Hz")
+  field(VAL, "100")
+}
+
+record(ao, "$(P)$(R)Vbw-SP"){
+  field(DESC, "Set video resolution bandwidth")
   field(DRVH, "15")
   field(DRVL, "1")
   field(PREC, "1")
@@ -150,8 +237,9 @@ record(ao, "$(P)$(R):vbw"){
   field(VAL, "100")
 }
 
+# Trace Length
 #Trace length: 801, 2401, 4001, 8001,10401, 16001, 32001, and 64001 points
-record(mbbo, "$(P)$(R):traceLenOpt") {
+record(mbbi, "$(P)$(R)TraceLenOpt-Sts") {
   field(DESC, "Trace length")
   field(ZRVL, "801")
   field(ZRST, "801")
@@ -172,72 +260,117 @@ record(mbbo, "$(P)$(R):traceLenOpt") {
   field(VAL, "0")
 }
 
-record(bo, "$(P)$(R):trkgenEn"){
-  field(DESC, "ON/OFF Tracking Generator output")
-  field(ZNAM, "OFF")
-  field(ONAM, "ON")
+record(mbbo, "$(P)$(R)TraceLenOpt-Sel") {
+  field(DESC, "Trace length")
+  field(ZRVL, "801")
+  field(ZRST, "801")
+  field(ONVL, "2401")
+  field(ONST, "2401")
+  field(TWVL, "4001")
+  field(TWST, "4001")
+  field(THVL, "8001")
+  field(THST, "8001")
+  field(FRVL, "10401")
+  field(FRST, "10401")
+  field(FVVL, "16001")
+  field(FVST, "16001")
+  field(SXVL, "32001")
+  field(SXST, "32001")
+  field(SVVL, "64001")
+  field(SVST, "64001")
+  field(VAL, "0")
 }
 
-record(ao, "$(P)$(R):trkgenLevel"){
-  field(DESC, "Tracking generator output power")
-  field(DRVH, "-3")
-  field(DRVL, "-43")
-  field(PREC, "1")
-  field(EGU, "dBm")
-  field(VAL, "-10")
+# Enable/Disable Tracking Generator
+#record(bi, "$(P)$(R)TrkgenEn-Sts"){
+#  field(DESC, "ON/OFF Tracking Generator output")
+#  field(ZNAM, "OFF")
+#  field(ONAM, "ON")
+#}
+#
+#record(bo, "$(P)$(R)TrkgenEn-Sel"){
+#  field(DESC, "ON/OFF Tracking Generator output")
+#  field(ZNAM, "OFF")
+#  field(ONAM, "ON")
+#}
+#
+# Tracking Generator Output Power
+#record(ai, "$(P)$(R)Span-RB"){
+#  field(DESC, "Frequency Span")
+#  field(PREC, "1")
+#  field(EGU, "Hz")
+#  field(VAL, "700000")
+#}
+#
+#record(ao, "$(P)$(R)TrkgenLevel"){
+#  field(DESC, "Tracking generator output power")
+#  field(DRVH, "-3")
+#  field(DRVL, "-43")
+#  field(PREC, "1")
+#  field(EGU, "dBm")
+#  field(VAL, "-10")
+#}
+#
+# Initiate Spectrum Acquisition
+record(bo, "$(P)$(R)GetSpec-Cmd"){
+  field(DESC, "Initiate spectrum acquisition")
 }
 
-record(bo, "$(P)$(R):getSpec"){
-  field(DESC, "Iniciate spectrum acquisition")
+# Initiate Sweep Spectrum Acquisition
+record(bo, "$(P)$(R)InitSwe-Cmd"){
+  field(DESC, "Initiate sweep spectrum acquisition")
 }
 
-record(bo, "$(P)$(R):Sweep"){
-  field(DESC, "Iniciate sweep spectrum acquisition")
-}
-
-record(waveform, "$(P)$(R):traceAmp") {
+# Amplitude Data
+record(waveform, "$(P)$(R)TraceAmp-Mon") {
   field(DESC, "Spectrum trace amplitude data")
   field(NELM, "64001")
   field(FTVL, "FLOAT")
   field(EGU, "dBm")
 }
 
-record(waveform, "$(P)$(R):traceFreq") {
+# Frequency Data
+record(waveform, "$(P)$(R)TraceFreq-Mon") {
   field(DESC, "Spectrum trace frequency data")
   field(NELM, "64001")
   field(FTVL, "DOUBLE")
   field(EGU, "Hz")
 }
 
-record(waveform, "$(P)$(R):PeakAmp") {
+# Amplitude Peak
+record(waveform, "$(P)$(R)PeakAmp-Mon") {
   field(DESC, "Spectrum peak amplitude data")
   field(NELM, "2")
   field(FTVL, "FLOAT")
   field(EGU, "dBm")
 }
 
-record(waveform, "$(P)$(R):PeakFreq") {
+# Frequency Peak 
+record(waveform, "$(P)$(R)PeakFreq-Mon") {
   field(DESC, "Spectrum peak frequency data")
   field(NELM, "2")
   field(FTVL, "DOUBLE")
   field(EGU, "MHz")
 }
 
-record(waveform, "$(P)$(R):SweepAmpData") {
+# Sweep Amplitude Data
+record(waveform, "$(P)$(R)SweAmpData-Mon") {
   field(DESC, "Sweep amplitude data")
   field(NELM, "1000")
   field(FTVL, "FLOAT")
   field(EGU, "dBm")
 }
 
-record(waveform, "$(P)$(R):SweepFreqData") {
+# Sweep Frequency Data
+record(waveform, "$(P)$(R)SweFreqData-Mon") {
   field(DESC, "Sweep frequency data")
   field(NELM, "1000")
   field(FTVL, "DOUBLE")
   field(EGU, "Hz")
 }
 
-record(waveform, "$(P)$(R):TuneMeas") {
+# Tune Measurement
+record(waveform, "$(P)$(R)TuneMeas-Mon") {
   field(DESC, "Tune measurement")
   field(NELM, "2")
   field(FTVL, "DOUBLE")
@@ -245,25 +378,53 @@ record(waveform, "$(P)$(R):TuneMeas") {
   field(EGU, "MHz")
 }
 
-record(ao, "$(P)$(R):TuneDelta"){
+# Delta Between Peaks
+record(ai, "$(P)$(R)TuneDelta-RB"){
   field(DESC, "Tune delta point between peaks")
   field(PREC, "0")
 }
 
-record(ao, "$(P)$(R):TuneFreq"){
-  field(DESC, "Tune reference frequency")
+record(ao, "$(P)$(R)TuneDelta-SP"){
+  field(DESC, "Tune delta point between peaks")
+  field(PREC, "0")
+}
+
+# Reference Frequency for Tune Measurement
+record(ai, "$(P)$(R)TuneFreq-RB"){
+  field(DESC, "Get tune reference frequency")
   field(PREC, "6")
   field(EGU, "MHz")
 }
 
-record(bo, "$(P)$(R):AutoAtt"){
+record(ao, "$(P)$(R)TuneFreq-SP"){
+  field(DESC, "Set tune reference frequency")
+  field(PREC, "6")
+  field(EGU, "MHz")
+}
+
+# Enable/Disable Signal Path Auto Attenuation
+record(bi, "$(P)$(R)EnblAutoAtt-Sts"){
+  field(DESC, "Get signal path auto-attenuation state")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(bo, "$(P)$(R)EnblAutoAtt-Sel"){
   field(DESC, "ON/OFF signal path auto-attenuation")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
 }
 
-record(ao, "$(P)$(R):RFAtt"){
-  field(DESC, "RF input attenuator")
+# Input Attenuation Value
+record(ai, "$(P)$(R)InAtt-RB"){
+  field(DESC, "Get RF input attenuator")
+  field(PREC, "0")
+  field(EGU, "dB")
+  field(VAL, "0")
+}
+
+record(ao, "$(P)$(R)InAtt"){
+  field(DESC, "Set RF input attenuator")
   field(DRVH, "0")
   field(DRVL, "-51")
   field(PREC, "0")
@@ -271,20 +432,41 @@ record(ao, "$(P)$(R):RFAtt"){
   field(VAL, "0")
 }
 
-record(bo, "$(P)$(R):PreAmp"){
+# Input Preamplifier Value
+record(bi, "$(P)$(R)PreAmp-Sts"){
+  field(DESC, "Get RF preamplifier state")
+  field(ZNAM, "OFF")
+  field(ONAM, "ON")
+}
+
+record(bo, "$(P)$(R)PreAmp-Sel"){
   field(DESC, "ON/OFF RF Preamplifier")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
 }
 
-record(ao, "$(P)$(R):AcqTime"){
-  field(DESC, "Acquisition rate")
+# Aquisition Time
+record(ai, "$(P)$(R)AcqTime-RB"){
+  field(DESC, "Get acquisition rate")
   field(PREC, "3")
   field(EGU, "ms")
 }
 
-record(ao, "$(P)$(R):Conn"){
-  field(DESC, "Device number to connect")
+record(ao, "$(P)$(R)AcqTime"){
+  field(DESC, "Set acquisition rate")
+  field(PREC, "3")
+  field(EGU, "ms")
+}
+
+# Device ID (found by the Search function)
+record(ai, "$(P)$(R)DevID-RB"){
+  field(DESC, "Get device number to connect to")
+  field(PREC, "0")
+  field(VAL, "$(DEVICE)")
+}
+
+record(ao, "$(P)$(R)DevID-SP"){
+  field(DESC, "Set device number to connect to")
   field(PREC, "0")
   field(VAL, "$(DEVICE)")
 }
