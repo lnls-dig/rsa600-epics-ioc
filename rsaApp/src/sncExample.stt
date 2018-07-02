@@ -10,6 +10,7 @@ foreign ssId;
 
 %{
 
+// Define settings for the spectrum plotting.
 static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, int traceLen)
 {
 	ReturnStatus rs;
@@ -41,11 +42,10 @@ static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, in
 	printf("\nStart freq: %f\n", getSettings.actualStartFreq);
 	printf("\nStop freq: %f\n", getSettings.actualStopFreq);
 	printf("\nFreq step size: %f\n", getSettings.actualFreqStepSize);
-	printf("\nFreq span: %f\n", getSettings.span);
-	
 	
 }
 
+// Define the center frequency value, in Hz.
 static void center_freq(double freq)
 {
 	ReturnStatus rs;
@@ -58,6 +58,7 @@ static void center_freq(double freq)
 	
 }
 
+// Define the reference level value, in dBm.
 static void ref_level(double refLevel)
 {
 	ReturnStatus rs;
@@ -71,7 +72,9 @@ static void ref_level(double refLevel)
 	
 }
 
-static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
+// Reset the frequency array and clean the stored values when a change is made in one of the spectrum settings. Then the n
+// frequency and amplitude acquisitions overwrite the first n elements (n=traceLength) in this array.
+static void set_freq_array(double* traceFreq, float* traceAmp)
 {
 	Spectrum_Settings getSettings;
 	SPECTRUM_GetSettings(&getSettings);
@@ -92,6 +95,7 @@ static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
 	}
 }
 
+// Get the spectrum trace
 int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int traceLength)
 {
 	ReturnStatus rs;
@@ -103,10 +107,10 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 	//printf("\nSPECTRUM_SetEnable: %s", DEVICE_GetErrorString(rs));
 
 	bool isActive = true;
-	int waitTimeoutMsec= 500;//Maximum allowable wait time for each data acquistion.
-	int numTimeouts = 2;//Maximum amount of attempts to acquire data if a timeout occurs.
+	int waitTimeoutMsec= 500;	//Maximum allowable wait time for each data acquistion.
+	int numTimeouts = 2;	//Maximum amount of attempts to acquire data if a timeout occurs.
 	//Note: the total wait time to acquire data is waitTimeoutMsec x numTimeouts.
-    int timeoutCount = 0;//Variable to track the timeouts.
+    int timeoutCount = 0;	//Variable to track the timeouts.
 	int traceCount = 0;
 	bool traceReady = false;
 	int outTracePoints;
@@ -128,7 +132,7 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 		{
 			//Get spectrum trace data.
 			rs = SPECTRUM_GetTrace(0,traceLength,traceAmp,&outTracePoints);
-			//Get traceInfo struct.
+			//Get traceInfo structure
 			Spectrum_TraceInfo traceInfo;
 			rs = SPECTRUM_GetTraceInfo(&traceInfo);
 			//You can use this information to report any non-zero bits in AcqDataStatus word, for example.
@@ -163,6 +167,7 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 	return (int)timeSec;
 
 }
+
 
 double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
 {
@@ -223,7 +228,7 @@ float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double*
 		SweepAmp[numpoint] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId, 801);
 		SweepFreq[numpoint] = freq;
 		printf("\nFreq: %f, Amp: %f, Point: %d\n", SweepAmp[numpoint], SweepFreq[numpoint], numpoint);
-		
+			
 		seq_pvPut(ssID, SweepAmpId, SYNC);
 	
 		seq_pvPut(ssID, SweepFreqId, SYNC);
@@ -264,7 +269,7 @@ static void init()
 	
 }
 
-int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
+int init2(SS_ID ssID, float* traceAmp,	 VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
 {
 	//Search for devices.
 	int numDev;
@@ -304,24 +309,7 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	//If there is no error connecting, then print the name of the connected device.
 	else
 		printf("\nCONNECTED TO: %s", devSN[deviceID]);
-	
-	// Tracking Generator Setup
-	bool trkgen_aval, trkgen_en;
-	double trkgen_leveldBm = -10.0;
-	rs = TRKGEN_GetHwInstalled(&trkgen_aval);
-	printf("\nTrack Generator Installed: %d", trkgen_aval);
-	
-	if (trkgen_aval)
-	{
-		rs = TRKGEN_SetEnable(true);
-		rs = TRKGEN_GetEnable(&trkgen_en);
-		printf("\nTrack gen enable: %d", trkgen_en);
-		// Range: 43 dBm to –3dBm
-		rs = TRKGEN_SetOutputLevel(trkgen_leveldBm);
-		rs = TRKGEN_GetOutputLevel(&trkgen_leveldBm);
-		printf("\nTrack Output Level: %f", trkgen_leveldBm);
-	}
-	
+
 	//bool TgBrEnable = false;
 	//rs = SetTgBridgeEnable(TgBrEnable);
 	//rs = GetTgBridgeEnable(&TgBrEnable);
@@ -419,53 +407,6 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	//Wait for the trace to be ready.
 	rs = SPECTRUM_WaitForTraceReady(waitTimeoutMsec,&traceReady);
 
-	/*
-	while(isActive)
-	{
-		printf("\nTrace %d\n",traceCount);
-		rs = SPECTRUM_AcquireTrace();
-		//Wait for the trace to be ready.
-		rs = SPECTRUM_WaitForTraceReady(waitTimeoutMsec,&traceReady);
-		printf("\nSPECTRUM_WaitForTraceReady: %s, traceReady: %d", DEVICE_GetErrorString(rs), traceReady);
-		if(traceReady)
-		{
-			//Get spectrum trace data.
-			rs = SPECTRUM_GetTrace(traceID,traceLength,traceAmp,&outTracePoints);
-			//Get traceInfo struct.
-			Spectrum_TraceInfo traceInfo;
-			rs = SPECTRUM_GetTraceInfo(&traceInfo);
-			//You can use this information to report any non-zero bits in AcqDataStatus word, for example.
-			if (traceInfo.acqDataStatus != 0)
-				printf("\nTrace:%i AcqDataStatus:0x%04X\n", traceCount, traceInfo.acqDataStatus);
-			
-			//Write data to the open file.
-
-		traceCount++;
-
-		}
-		else timeoutCount++;
-
-		//Stop acquiring traces when the limit is reached or the wait time is exceeded.
-		if(numTraces == traceCount || timeoutCount == numTimeouts)
-			isActive = false;
-	}
-
-	int n;
-	double freq, stepfreq;
-	freq = getSettings.actualStartFreq;
-	stepfreq = getSettings.actualFreqStepSize;
-	printf("\nFreq: %f, Step: %f\n", freq, stepfreq);
-	
-	for (n = 0; n < traceLength; n++)
-	{
-		traceFreq[n] = freq;
-		freq = freq + stepfreq;
-	}
-
-	seq_pvPut(ssID, traceAmpId, SYNC);
-
-	seq_pvPut(ssID, traceFreqId, SYNC);
-	*/
 	//Disconnect the device and finish up.
 	//rs = SPECTRUM_SetEnable(false);
 	if(pTraceData)
@@ -479,50 +420,8 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	return 0;
 }
 
-int trkgen_enable(int enable)
-{
-	bool getenable;
-	bool trkgen_aval;
-	TRKGEN_GetHwInstalled(&trkgen_aval);
-	if (trkgen_aval)
-	{
-		if (enable == 1)
-		{
-			printf("\nTRKGEN_SetEnable(true)\n");
-			//TRKGEN_SetEnable(true);
-			SetTgEnable(true);
-		}
-		else
-		{
-			printf("\nTRKGEN_SetEnable(false)\n");
-			//TRKGEN_SetEnable(false);
-			SetTgEnable(false);
-		}
-		GetTgEnable(&getenable);
-		printf("\nTRKGEN_GetEnable %d\n", getenable);
-		return (int)getenable;
-	}
-	else
-	{
-		printf("\nTracking generator hardware not installed\n");
-		return 0;
-	}
-}
-
-void trkgen_level(double trkgenLevel)
-{
-	bool trkgen_aval;
-	TRKGEN_GetHwInstalled(&trkgen_aval);
-	if (trkgen_aval)
-	{
-		TRKGEN_SetOutputLevel(trkgenLevel);
-		DEVICE_Run();
-
-		TRKGEN_GetOutputLevel(&trkgenLevel);
-		printf("\nTracking generator level output %f dBm\n", trkgenLevel);
-	}
-}
-
+// Define the signal path to auto-attenuation enable state. As the equipment's API operates with 
+// bool values and the IOC with int values, this function also makes the needed conversion.
 int auto_attenuation(int value)
 {
 	bool enable;
@@ -531,19 +430,22 @@ int auto_attenuation(int value)
 	else
 		CONFIG_SetAutoAttenuationEnable(false);
 	
-	DEVICE_Run();
+	DEVICE_Run();	// New state value applied to the hardware.
 	CONFIG_GetAutoAttenuationEnable(&enable);
 	return (int)enable;
 }
 
+// Define the RF Input Attenuator value, in dB units.
 double RF_attenuation(double value)
 {
 	CONFIG_SetRFAttenuator(value);
-	DEVICE_Run();
+	DEVICE_Run();	// New setting value applied to the hardware.
 	CONFIG_GetRFAttenuator(&value);
 	return value;
 }
 
+// Define the RF Preamplifier enable state. As the equipment's API operates with bool values
+// and the IOC with int values, this function also makes the needed conversion.
 int pre_amplifier(int value)
 {
 	bool enable;
@@ -552,7 +454,7 @@ int pre_amplifier(int value)
 	else
 		CONFIG_SetRFPreampEnable(false);
 	
-	DEVICE_Run();
+	DEVICE_Run();	// New state value applied to the hardware.
 	CONFIG_GetRFPreampEnable(&enable);
 	return (int)enable;
 }
@@ -564,151 +466,139 @@ int pre_amplifier(int value)
 %%//----------------------------------------
 
 double maxFreq;
-assign maxFreq to "{user}:freq.DRVH";
+assign maxFreq to "{P}{R}CenterFreq-SP.DRVH";
 
 double minFreq;
-assign minFreq to "{user}:freq.DRVL";
-
+assign minFreq to "{P}{R}CenterFreq-SP.DRVL";
+	
 double freq;
-assign freq to "{user}:freq";
+assign freq to "{P}{R}CenterFreq-SP";
 monitor freq;
 evflag freqFlag;
 sync freq freqFlag;
 
 double refLevel;
-assign refLevel to "{user}:refLevel";
+assign refLevel to "{P}{R}RefLvl-SP";
 monitor refLevel;
 evflag refLevelFlag;
 sync refLevel refLevelFlag;
 
 double StartFreq;
-assign StartFreq to "{user}:StartFreq";
+assign StartFreq to "{P}{R}StartFreq-SP";
 monitor StartFreq;
 
 double StopFreq;
-assign StopFreq to "{user}:StopFreq";
+assign StopFreq to "{P}{R}StopFreq-SP";
 monitor StopFreq;
 
 int SweepPoints;
-assign SweepPoints to "{user}:SweepPoints";
+assign SweepPoints to "{P}{R}SwePoints-SP";
 monitor SweepPoints;
 
 double maxSpan;
-assign maxSpan to "{user}:span.DRVH";
+assign maxSpan to "{P}{R}Span-SP.DRVH";
 
 double minSpan;
-assign minSpan to "{user}:span.DRVL";
+assign minSpan to "{P}{R}Span-SP.DRVL";
 
 double hoprSpan;
-assign hoprSpan to "{user}:span.HOPR";
+assign hoprSpan to "{P}{R}Span-SP.HOPR";
 
 double loprSpan;
-assign loprSpan to "{user}:span.LOPR";
+assign loprSpan to "{P}{R}Span-SP.LOPR";
 
 double span;
-assign span to "{user}:span";
+assign span to "{P}{R}Span-SP";
 monitor span;
 evflag spanFlag;
 sync span spanFlag;
 
 double maxRBW;
-assign maxRBW to "{user}:rbw.DRVH";
+assign maxRBW to "{P}{R}Rbw-SP.DRVH";
 
 double minRBW;
-assign minRBW to "{user}:rbw.DRVL";
+assign minRBW to "{P}{R}Rbw-SP.DRVL";
 
 double rbw;
-assign rbw to "{user}:rbw";
+assign rbw to "{P}{R}Rbw-SP";
 monitor rbw;
 evflag rbwFlag;
 sync rbw rbwFlag;
 
 double maxVBW;
-assign maxVBW to "{user}:vbw.DRVH";
+assign maxVBW to "{P}{R}Vbw-SP.DRVH";
 
 double minVBW;
-assign minVBW to "{user}:vbw.DRVL";
+assign minVBW to "{P}{R}Vbw-SP.DRVL";
 
 int vbwEn;
-assign vbwEn to "{user}:vbwEn";
+assign vbwEn to "{P}{R}EnblVbw-Sel";
 monitor vbwEn;
 evflag vbwEnFlag;
 sync vbwEn vbwEnFlag;
 
 double vbw;
-assign vbw to "{user}:vbw";
+assign vbw to "{P}{R}Vbw-SP";
 monitor vbw;
 evflag vbwFlag;
 sync vbw vbwFlag;
 
 int traceLenOpt, traceLenMenu[8] = {801, 2401, 4001, 8001, 10401, 16001, 32001, 64001};
-assign traceLenOpt to "{user}:traceLenOpt";
+assign traceLenOpt to "{P}{R}TraceLenOpt-Sel";
 monitor traceLenOpt;
 evflag traceLenFlag;
 sync traceLenOpt traceLenFlag;
 
 int getSpec;
-assign getSpec to "{user}:getSpec";
+assign getSpec to "{P}{R}GetSpec-Cmd";
 monitor getSpec;
 
 int Sweep;
-assign Sweep to "{user}:Sweep";
+assign Sweep to "{P}{R}InitSwe-Cmd";
 monitor Sweep;
 
-int trkgen;
-assign trkgen to "{user}:trkgenEn";
-monitor trkgen;
-evflag trkgenFlag;
-sync trkgen trkgenFlag;
-
-double trkgenLevel;
-assign trkgenLevel to "{user}:trkgenLevel";
-monitor trkgenLevel;
-evflag trkgenLevelFlag;
-sync trkgenLevel trkgenLevelFlag;
-
 float traceAmp[64001];
-assign traceAmp to "{user}:traceAmp";
+assign traceAmp to "{P}{R}TraceAmp-Mon";
 
 double traceFreq[64001];
-assign traceFreq to "{user}:traceFreq";
+assign traceFreq to "{P}{R}TraceFreq-Mon";
 
 float PeakAmp[2];
-assign PeakAmp to "{user}:PeakAmp";
+assign PeakAmp to "{P}{R}PeakAmp-Mon";
 
 double PeakFreq[2];
-assign PeakFreq to "{user}:PeakFreq";
+assign PeakFreq to "{P}{R}PeakFreq-Mon";
 
 float SweepAmp[1000];
-assign SweepAmp to "{user}:SweepAmpData";
+assign SweepAmp to "{P}{R}SweAmpData-Mon";
 
 double SweepFreq[1000];
-assign SweepFreq to "{user}:SweepFreqData";
+assign SweepFreq to "{P}{R}SweFreqData-Mon";
 
 int AutoAtt;
-assign AutoAtt to "{user}:AutoAtt";
+assign AutoAtt to "{P}{R}EnblAutoAtt-Sel";
 monitor AutoAtt;
 evflag AutoAttFlag;
 sync AutoAtt AutoAttFlag;
 
 double RFAtt;
-assign RFAtt to "{user}:RFAtt";
+assign RFAtt to "{P}{R}InAtt-SP";
 monitor RFAtt;
 evflag RFAttFlag;
 sync RFAtt RFAttFlag;
 
 double TuneMeas[2];
-assign TuneMeas to "{user}:TuneMeas";
+assign TuneMeas to "{P}{R}TuneMeas-Mon";
 
 double TuneFreq;
-assign TuneFreq to "{user}:TuneFreq";
+assign TuneFreq to "{P}{R}TuneFreq-SP";
 monitor TuneFreq;
 
 int TuneDelta;
-assign TuneDelta to "{user}:TuneDelta";
+assign TuneDelta to "{P}{R}TuneDelta-SP";
 
 int PreAmp;
-assign PreAmp to "{user}:PreAmp";
+assign PreAmp to "{P}{R}PreAmp-Sel";
 monitor PreAmp;
 evflag PreAmpFlag;
 sync PreAmp PreAmpFlag;
@@ -718,12 +608,12 @@ sync PreAmp PreAmpFlag;
 int timestamp, acqTimestamp, acqCount;
 
 double AcqTime;
-assign AcqTime to "{user}:AcqTime";
+assign AcqTime to "{P}{R}AcqTime-SP";
 
 int initFlag = 0;
 
 int deviceID;
-assign deviceID to "{user}:Conn";
+assign deviceID to "{P}{R}DevID-SP";
 monitor deviceID;
 
 ss ss1 {
@@ -769,7 +659,6 @@ ss ss1 {
 		printf("\nStart freq: %f\n", getSettings.actualStartFreq);
 		printf("\nStop freq: %f\n", getSettings.actualStopFreq);
 		printf("\nFreq step size: %f\n", getSettings.actualFreqStepSize);
-		printf("\nFreq span: %f\n", getSettings.span);
 		printf("\n********* Initial parameters *********\n");
 		
 		}%
@@ -857,15 +746,6 @@ ss ss1 {
 	when (efTestAndClear(refLevelFlag)) {
 	    printf("Reference level change to: %f\n",refLevel);
 	    ref_level(refLevel);
-	} state opr
-
-	when (efTestAndClear(trkgenFlag)) {
-		trkgen = trkgen_enable(trkgen);
-		pvPut(trkgen);
-	} state opr
-
-	when (efTestAndClear(trkgenLevelFlag)) {
-		trkgen_level(trkgenLevel);
 	} state opr
 
 	when (efTestAndClear(AutoAttFlag)) {
