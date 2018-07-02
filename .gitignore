@@ -1,10 +1,14 @@
 CSSOPI/.*
+op/opi/.*
+op/opi/CSS*
 rsaApp/Db/O.*
 rsaApp/src/O.*
+documentation/DemoApps*
 bin
 lib
 include
 db
 dbd
 O.*/
+*.swp
 
