@@ -107,10 +107,10 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 	//printf("\nSPECTRUM_SetEnable: %s", DEVICE_GetErrorString(rs));
 
 	bool isActive = true;
-	int waitTimeoutMsec= 500;	//Maximum allowable wait time for each data acquistion.
-	int numTimeouts = 2;	//Maximum amount of attempts to acquire data if a timeout occurs.
+	int waitTimeoutMsec= 500;//Maximum allowable wait time for each data acquistion.
+	int numTimeouts = 2;//Maximum amount of attempts to acquire data if a timeout occurs.
 	//Note: the total wait time to acquire data is waitTimeoutMsec x numTimeouts.
-    int timeoutCount = 0;	//Variable to track the timeouts.
+    int timeoutCount = 0;//Variable to track the timeouts.
 	int traceCount = 0;
 	bool traceReady = false;
 	int outTracePoints;
@@ -228,7 +228,7 @@ float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double*
 		SweepAmp[numpoint] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId, 801);
 		SweepFreq[numpoint] = freq;
 		printf("\nFreq: %f, Amp: %f, Point: %d\n", SweepAmp[numpoint], SweepFreq[numpoint], numpoint);
-			
+		
 		seq_pvPut(ssID, SweepAmpId, SYNC);
 	
 		seq_pvPut(ssID, SweepFreqId, SYNC);
@@ -269,7 +269,7 @@ static void init()
 	
 }
 
-int init2(SS_ID ssID, float* traceAmp,	 VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
+int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
 {
 	//Search for devices.
 	int numDev;
@@ -430,7 +430,7 @@ int auto_attenuation(int value)
 	else
 		CONFIG_SetAutoAttenuationEnable(false);
 	
-	DEVICE_Run();	// New state value applied to the hardware.
+	DEVICE_Run();
 	CONFIG_GetAutoAttenuationEnable(&enable);
 	return (int)enable;
 }
@@ -439,7 +439,7 @@ int auto_attenuation(int value)
 double RF_attenuation(double value)
 {
 	CONFIG_SetRFAttenuator(value);
-	DEVICE_Run();	// New setting value applied to the hardware.
+	DEVICE_Run();
 	CONFIG_GetRFAttenuator(&value);
 	return value;
 }
@@ -454,7 +454,7 @@ int pre_amplifier(int value)
 	else
 		CONFIG_SetRFPreampEnable(false);
 	
-	DEVICE_Run();	// New state value applied to the hardware.
+	DEVICE_Run();
 	CONFIG_GetRFPreampEnable(&enable);
 	return (int)enable;
 }
@@ -470,7 +470,7 @@ assign maxFreq to "{P}{R}CenterFreq-SP.DRVH";
 
 double minFreq;
 assign minFreq to "{P}{R}CenterFreq-SP.DRVL";
-	
+
 double freq;
 assign freq to "{P}{R}CenterFreq-SP";
 monitor freq;
