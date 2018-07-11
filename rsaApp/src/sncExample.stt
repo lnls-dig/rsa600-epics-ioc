@@ -74,7 +74,7 @@ static void ref_level(double refLevel)
 
 // Reset the frequency array and clean the stored values when a change is made in one of the spectrum settings. Then the n
 // frequency and amplitude acquisitions overwrite the first n elements (n=traceLength) in this array.
-static void set_freq_array(double* traceFreq, float* traceAmp)
+static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
 {
 	Spectrum_Settings getSettings;
 	SPECTRUM_GetSettings(&getSettings);
@@ -167,7 +167,6 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 	return (int)timeSec;
 
 }
-
 
 double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
 {
