@@ -24,4 +24,4 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit
 
 ## Start any sequence programs
-seq sncExample, "P=DIG: R=RSA:"
+seq sncExample, "P=DIG:, R=RSA:"
