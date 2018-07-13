@@ -368,24 +368,19 @@ record(waveform, "$(P)$(R)TuneMeas-Mon") {
 }
 
 # Delta Between Peaks
-record(ai, "$(P)$(R)TuneDelta-RB"){
-  field(DESC, "Tune delta point between peaks")
-  field(PREC, "0")
-}
-
-record(ao, "$(P)$(R)TuneDelta-SP"){
+record(ai, "$(P)$(R)TuneDelta-Mon"){
   field(DESC, "Tune delta point between peaks")
   field(PREC, "0")
 }
 
 # Reference Frequency for Tune Measurement
-record(ai, "$(P)$(R)TuneFreq-RB"){
+record(ai, "$(P)$(R)TuneFreq-Mon"){
   field(DESC, "Get tune reference frequency")
   field(PREC, "6")
   field(EGU, "MHz")
 }
 
-record(ao, "$(P)$(R)TuneFreq-SP"){
+record(ai, "$(P)$(R)TuneFreq-Mon"){
   field(DESC, "Set tune reference frequency")
   field(PREC, "6")
   field(EGU, "MHz")
@@ -421,28 +416,23 @@ record(ao, "$(P)$(R)InAtt-SP"){
   field(VAL, "0")
 }
 
+
 # Input Preamplifier Value
-record(bi, "$(P)$(R)PreAmp-Sts"){
+record(bi, "$(P)$(R)EnblPreAmp-Sts"){
   field(DESC, "Get RF preamplifier state")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
 }
 
-record(bo, "$(P)$(R)PreAmp-Sel"){
+record(bo, "$(P)$(R)EnblPreAmp-Sel"){
   field(DESC, "ON/OFF RF Preamplifier")
   field(ZNAM, "OFF")
   field(ONAM, "ON")
 }
 
 # Aquisition Time
-record(ai, "$(P)$(R)AcqTime-RB"){
+record(ai, "$(P)$(R)AcqTime-Mon"){
   field(DESC, "Get acquisition rate")
-  field(PREC, "3")
-  field(EGU, "ms")
-}
-
-record(ao, "$(P)$(R)AcqTime-SP"){
-  field(DESC, "Set acquisition rate")
   field(PREC, "3")
   field(EGU, "ms")
 }
@@ -454,7 +444,7 @@ record(ai, "$(P)$(R)DevID-RB"){
   field(VAL, "$(DEVICE)")
 }
 
-record(ao, "$(P)$(R)DevID-SP"){
+record(ai, "$(P)$(R)DevID-Mon"){
   field(DESC, "Set device number to connect to")
   field(PREC, "0")
   field(VAL, "$(DEVICE)")

@@ -90,7 +90,6 @@ double get_ref_level(double refLevelRB)
 	return refLevelRB;
 }
 
-
 // Reset the frequency array and clean the stored values when a change is made in one of the spectrum settings. Then the n
 // frequency and amplitude acquisitions overwrite the first n elements (n=traceLength) in this array.
 static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
@@ -438,21 +437,26 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 	return 0;
 }
 
-// Define the signal path to auto-attenuation enable state. As the equipment's API operates with 
-// bool values and the IOC with int values, this function also makes the needed conversion.
-int auto_attenuation(int value)
+// Enable/Disable auto-attenuation.
+// As the equipment's API operates with bool values and the IOC with int values, this function also makes the needed conversion.
+int set_auto_attenuation(int AutoAtt)
 {
-	bool enable;
-	if (value)
+	if (AutoAtt)
 		CONFIG_SetAutoAttenuationEnable(true);
 	else
 		CONFIG_SetAutoAttenuationEnable(false);
 	
 	DEVICE_Run();
-	CONFIG_GetAutoAttenuationEnable(&enable);
-	return (int)enable;
+	return (int)AutoAtt;
 }
 
+// Get auto-attenuation state.
+int get_auto_attenuation(bool AutoAttSts)
+{
+	CONFIG_GetAutoAttenuationEnable(&AutoAttSts);
+	return (int)AutoAttSts;
+}
+	
 // Define the RF Input Attenuator value, in dB units.
 double RF_attenuation(double value)
 {
@@ -462,19 +466,25 @@ double RF_attenuation(double value)
 	return value;
 }
 
-// Define the RF Preamplifier enable state. As the equipment's API operates with bool values
-// and the IOC with int values, this function also makes the needed conversion.
-int pre_amplifier(int value)
+// Enable/Disable the RF Preamplifier.
+// As the equipment's API operates with bool values and the IOC with int values, this function also makes the needed conversion.
+int set_pre_amplifier(int PreAmp)
 {
-	bool enable;
-	if (value)
+	if (PreAmp)
 		CONFIG_SetRFPreampEnable(true);
 	else
 		CONFIG_SetRFPreampEnable(false);
 	
 	DEVICE_Run();
-	CONFIG_GetRFPreampEnable(&enable);
-	return (int)enable;
+	return (int)PreAmp;
+}
+
+// Get preamplifier state.
+int get_pre_amplifier(bool PreAmpSts)
+{
+	CONFIG_GetRFPreampEnable(&PreAmpSts);
+	printf("\nRead Preamp %d\n", PreAmpSts);
+	return (int)PreAmpSts;
 }
 
 }%
@@ -497,6 +507,7 @@ sync freq freqFlag;
 
 double freqRB;
 assign freqRB to "{P}{R}CenterFreq-RB";
+monitor freqRB;
 
 double refLevel;
 assign refLevel to "{P}{R}RefLvl-SP";
@@ -636,35 +647,32 @@ double TuneMeas[2];
 assign TuneMeas to "{P}{R}TuneMeas-Mon";
 
 double TuneFreq;
-assign TuneFreq to "{P}{R}TuneFreq-SP";
+assign TuneFreq to "{P}{R}TuneFreq-Mon";
 monitor TuneFreq;
 
 int TuneDelta;
-assign TuneDelta to "{P}{R}TuneDelta-SP";
+assign TuneDelta to "{P}{R}TuneDelta-Mon";
 
 int PreAmp;
-assign PreAmp to "{P}{R}PreAmp-Sel";
+assign PreAmp to "{P}{R}EnblPreAmp-Sel";
 monitor PreAmp;
 evflag PreAmpFlag;
 sync PreAmp PreAmpFlag;
 
 int PreAmpSts;
-assign PreAmpSts to "{P}{R}PreAmp-Sts";
+assign PreAmpSts to "{P}{R}EnblPreAmp-Sts";
 
 %%Spectrum_Limits salimits;
 
 int timestamp, acqTimestamp, acqCount;
 
 double AcqTime;
-assign AcqTime to "{P}{R}AcqTime-SP";
-
-double AcqTimeRB;
-assign AcqTimeRB to "{P}{R}AcqTime-RB";
+assign AcqTime to "{P}{R}AcqTime-Mon";
 
 int initFlag = 0;
 
 int deviceID;
-assign deviceID to "{P}{R}DevID-SP";
+assign deviceID to "{P}{R}DevID-Mon";
 monitor deviceID;
 
 ss ss1 {
@@ -743,9 +751,6 @@ ss ss1 {
 		
 		minVBW = salimits.minVBW;
 		pvPut(minVBW);
-		
-		freqRB = get_center_freq(freqRB);
-		pvPut(freqRB);
 		
 		refLevelRB = get_ref_level(refLevelRB);
 		pvPut(refLevelRB);
@@ -827,11 +832,11 @@ ss ss1 {
 	} state opr
 
 	when (efTestAndClear(AutoAttFlag)) {
-		auto_attenuation(AutoAtt);
+		set_auto_attenuation(AutoAtt);
 		RFAtt = RF_attenuation(RFAtt);
 		pvPut(RFAtt);
 		
-		AutoAttSts = AutoAtt;
+		AutoAttSts = get_auto_attenuation(AutoAttSts);
 		pvPut(AutoAttSts);
 	} state opr
 
@@ -844,9 +849,9 @@ ss ss1 {
 	} state opr
 
 	when (efTestAndClear(PreAmpFlag)) {
-		pre_amplifier(PreAmp);
+		set_pre_amplifier(PreAmp);
 		
-		PreAmpSts = PreAmp;
+		PreAmpSts = get_pre_amplifier(PreAmpSts);
 		pvPut(PreAmpSts);
 	} state opr
 
@@ -857,8 +862,6 @@ ss ss1 {
 			acqTimestamp = timestamp;
 			AcqTime = 1000/((double)acqCount);
 			pvPut(AcqTime);
-			AcqTimeRB = AcqTime;
-			pvPut(AcqTimeRB);
 			acqCount = 1;
 	    }
 	    else
