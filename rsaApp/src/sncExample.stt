@@ -46,16 +46,25 @@ static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, in
 }
 
 // Define the center frequency value, in Hz.
-static void center_freq(double freq)
+double set_center_freq(double freq)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetCenterFreq(freq);
-	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-	rs = CONFIG_GetCenterFreq(&freq);
-	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-
+	printf("\nWRITE_ERROR: %s", DEVICE_GetErrorString(rs));
 	printf("\nFrequency: %f\n", freq);
 	
+	return freq;
+}
+
+// Read the center frequency
+double get_center_freq(double freqRB)
+{
+	ReturnStatus rs;
+	rs = CONFIG_GetCenterFreq(&freqRB);
+	printf("\nREAD_ERROR: %s", DEVICE_GetErrorString(rs));
+	printf("\nRead_Frequency: %f\n", freqRB);
+	
+	return freqRB;
 }
 
 // Define the reference level value, in dBm.
@@ -476,11 +485,17 @@ monitor freq;
 evflag freqFlag;
 sync freq freqFlag;
 
+double freqRB;
+assign freqRB to "{P}{R}CenterFreq-RB";
+
 double refLevel;
 assign refLevel to "{P}{R}RefLvl-SP";
 monitor refLevel;
 evflag refLevelFlag;
 sync refLevel refLevelFlag;
+
+double refLevelRB;
+assign refLevelRB to "{P}{R}RefLvl-RB";
 
 double StartFreq;
 assign StartFreq to "{P}{R}StartFreq-SP";
@@ -512,6 +527,9 @@ monitor span;
 evflag spanFlag;
 sync span spanFlag;
 
+double spanRB;
+assign spanRB to "{P}{R}Span-RB";
+
 double maxRBW;
 assign maxRBW to "{P}{R}Rbw-SP.DRVH";
 
@@ -523,6 +541,9 @@ assign rbw to "{P}{R}Rbw-SP";
 monitor rbw;
 evflag rbwFlag;
 sync rbw rbwFlag;
+
+double rbwRB;
+assign rbwRB to "{P}{R}Rbw-RB";
 
 double maxVBW;
 assign maxVBW to "{P}{R}Vbw-SP.DRVH";
@@ -536,17 +557,26 @@ monitor vbwEn;
 evflag vbwEnFlag;
 sync vbwEn vbwEnFlag;
 
+int vbwEnSts;
+assign vbwEnSts to "{P}{R}EnblVbw-Sts";
+
 double vbw;
 assign vbw to "{P}{R}Vbw-SP";
 monitor vbw;
 evflag vbwFlag;
 sync vbw vbwFlag;
 
+double vbwRB;
+assign vbwRB to "{P}{R}Vbw-RB";
+
 int traceLenOpt, traceLenMenu[8] = {801, 2401, 4001, 8001, 10401, 16001, 32001, 64001};
 assign traceLenOpt to "{P}{R}TraceLenOpt-Sel";
 monitor traceLenOpt;
 evflag traceLenFlag;
 sync traceLenOpt traceLenFlag;
+
+int traceLenSts;
+assign traceLenSts to "{P}{R}TraceLenOpt-Sts";
 
 int getSpec;
 assign getSpec to "{P}{R}GetSpec-Cmd";
@@ -580,11 +610,17 @@ monitor AutoAtt;
 evflag AutoAttFlag;
 sync AutoAtt AutoAttFlag;
 
+int AutoAttSts;
+assign AutoAttSts to "{P}{R}EnblAutoAtt-Sts";
+
 double RFAtt;
 assign RFAtt to "{P}{R}InAtt-SP";
 monitor RFAtt;
 evflag RFAttFlag;
 sync RFAtt RFAttFlag;
+
+double RFAttRB;
+assign RFAttRB to "{P}{R}InAtt-RB";
 
 double TuneMeas[2];
 assign TuneMeas to "{P}{R}TuneMeas-Mon";
@@ -602,12 +638,18 @@ monitor PreAmp;
 evflag PreAmpFlag;
 sync PreAmp PreAmpFlag;
 
+int PreAmpSts;
+assign PreAmpSts to "{P}{R}PreAmp-Sts";
+
 %%Spectrum_Limits salimits;
 
 int timestamp, acqTimestamp, acqCount;
 
 double AcqTime;
 assign AcqTime to "{P}{R}AcqTime-SP";
+
+double AcqTimeRB;
+assign AcqTimeRB to "{P}{R}AcqTime-RB";
 
 int initFlag = 0;
 
@@ -622,7 +664,7 @@ ss ss1 {
 	} state opr
 
 	when (delay(0.1)) {
-		initFlag = init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), deviceID);
+		initFlag = init2(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), deviceID, freq);
 
 		%{
 		
@@ -692,6 +734,9 @@ ss ss1 {
 		minVBW = salimits.minVBW;
 		pvPut(minVBW);
 		
+		freqRB = get_center_freq(freqRB);
+		pvPut(freqRB);
+		
 		//span = getSettings.span;
 		//pvPut(span, SYNC);
 		
@@ -713,53 +758,83 @@ ss ss1 {
 	    printf("Span change to: %f\n",span);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
+		
+		spanRB = span;
+		pvPut(spanRB);
 	} state opr
 
 	when (efTestAndClear(rbwFlag)) {
 	    printf("Rbw change to: %f\n",rbw);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+		
+		rbwRB = rbw;
+		pvPut(rbwRB);
 	} state opr
 
 	when (efTestAndClear(vbwFlag)) {
 	    printf("Vbw change to: %f\n",vbw);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+		
+		vbwRB = vbw;
+		pvPut(vbwRB);
 	} state opr
 
 	when (efTestAndClear(vbwEnFlag)) {
 	    printf("Vbw enable: %s\n",vbwEn ? "ON" : "OFF");
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+		
+		vbwEnSts = vbwEn;
+		pvPut(vbwEnSts);
 	} state opr
 
 	when (efTestAndClear(traceLenFlag)) {
 	    printf("TraceLen change to: %d\n",traceLenMenu[traceLenOpt]);
 	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
+		
+		traceLenSts = traceLenOpt;
+		pvPut(traceLenSts);
 	} state opr
 
 	when (efTestAndClear(freqFlag)) {
 	    printf("Frequency change to: %f\n",freq);
-	    center_freq(freq);
+	    set_center_freq(freq);
 	    set_freq_array(ssId,traceFreq, traceAmp);
+		
+		freqRB = get_center_freq(freqRB);
+		pvPut(freqRB);
 	} state opr
 
 	when (efTestAndClear(refLevelFlag)) {
 	    printf("Reference level change to: %f\n",refLevel);
 	    ref_level(refLevel);
+		
+		refLevelRB = refLevel;
+		pvPut(refLevelRB);
 	} state opr
 
 	when (efTestAndClear(AutoAttFlag)) {
 		auto_attenuation(AutoAtt);
 		RFAtt = RF_attenuation(RFAtt);
 		pvPut(RFAtt);
+		
+		AutoAttSts = AutoAtt;
+		pvPut(AutoAttSts);
 	} state opr
 
 	when (efTestAndClear(RFAttFlag)) {
 		RFAtt = RF_attenuation(RFAtt);
 		pvPut(RFAtt);
+		
+		RFAttRB = RFAtt;
+		pvPut(RFAttRB);
 	} state opr
 
 	when (efTestAndClear(PreAmpFlag)) {
 		pre_amplifier(PreAmp);
+		
+		PreAmpSts = PreAmp;
+		pvPut(PreAmpSts);
 	} state opr
 
 	when (getSpec == 1) {
@@ -769,6 +844,8 @@ ss ss1 {
 			acqTimestamp = timestamp;
 			AcqTime = 1000/((double)acqCount);
 			pvPut(AcqTime);
+			AcqTimeRB = AcqTime;
+			pvPut(AcqTimeRB);
 			acqCount = 1;
 	    }
 	    else
