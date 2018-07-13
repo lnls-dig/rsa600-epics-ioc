@@ -56,7 +56,7 @@ double set_center_freq(double freq)
 	return freq;
 }
 
-// Read the center frequency
+// Read the center frequency value, in Hz.
 double get_center_freq(double freqRB)
 {
 	ReturnStatus rs;
@@ -67,19 +67,29 @@ double get_center_freq(double freqRB)
 	return freqRB;
 }
 
-// Define the reference level value, in dBm.
-static void ref_level(double refLevel)
+// Set the reference level value, in dBm.
+double set_ref_level(double refLevel)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetReferenceLevel(refLevel);
 	DEVICE_Run();
-	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-	rs = CONFIG_GetReferenceLevel(&refLevel);
-	printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-
-	printf("\nRef level: %f\n", refLevel);
+	printf("\nWRITE ERROR: %s", DEVICE_GetErrorString(rs));
+	printf("\nWrite Ref level: %f\n", refLevel);
 	
+	return refLevel;
 }
+
+// Get the reference level value, in dBm.
+double get_ref_level(double refLevelRB)
+{
+	ReturnStatus rs;
+	rs = CONFIG_GetReferenceLevel(&refLevelRB);
+	printf("\nREAD ERROR: %s", DEVICE_GetErrorString(rs));
+	printf("\nRead Ref level: %f\n", refLevelRB);
+	
+	return refLevelRB;
+}
+
 
 // Reset the frequency array and clean the stored values when a change is made in one of the spectrum settings. Then the n
 // frequency and amplitude acquisitions overwrite the first n elements (n=traceLength) in this array.
@@ -737,6 +747,9 @@ ss ss1 {
 		freqRB = get_center_freq(freqRB);
 		pvPut(freqRB);
 		
+		refLevelRB = get_ref_level(refLevelRB);
+		pvPut(refLevelRB);
+		
 		//span = getSettings.span;
 		//pvPut(span, SYNC);
 		
@@ -807,9 +820,9 @@ ss ss1 {
 
 	when (efTestAndClear(refLevelFlag)) {
 	    printf("Reference level change to: %f\n",refLevel);
-	    ref_level(refLevel);
+	    set_ref_level(refLevel);
 		
-		refLevelRB = refLevel;
+		refLevelRB = get_ref_level(refLevelRB);
 		pvPut(refLevelRB);
 	} state opr
 
