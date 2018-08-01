@@ -32,7 +32,6 @@ static bool set_spectrum_settings(double span, double rbw, double vbw, int vbwEn
 	
 	rs = SPECTRUM_GetSettings(&getSettings);
 	//printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-
 	
 	//spanRB =  getSettings.span;
 	printf("\nSpan: %f\n", getSettings.span);
@@ -46,21 +45,55 @@ static bool set_spectrum_settings(double span, double rbw, double vbw, int vbwEn
 
 }
 
-/*/ Get spectrum settings
-static bool get_spectrum_settings(SS_ID ssID, double* spanRB, VAR_ID spanRBId double, rbwRB, double vbwRB, int vbwEnSts, int traceLenSts)
+// Get span
+static double get_span(double spanRB)
 {
 	ReturnStatus rs;
-	Spectrum_Settings getSettingsettings;
-	rs = SPECTRUM_GetSettings(&getSettings);
-	
-	spanRB = getSettings.span;
-	//printf("\nSPAN_RB: %f\n", spanRB);
-	rbwRB = getSettings.rbw;
-	vbwRB = getSettings.vbw;
-	vbwEnSts = getSettings.enableVBW;
-	traceLenSts = getSettings.traceLength;
-	
-}*/
+	Spectrum_Settings settings;
+	rs = SPECTRUM_GetSettings(&settings);
+	spanRB = settings.span;
+	return spanRB;
+}
+
+// Get resolution bandwidth
+static double get_rbw(double rbwRB)
+{
+	ReturnStatus rs;
+	Spectrum_Settings settings;
+	rs = SPECTRUM_GetSettings(&settings);
+	rbwRB = settings.rbw;
+	return rbwRB;
+}
+
+// Get video bandwidth
+static double get_vbw(double vbwRB)
+{
+	ReturnStatus rs;
+	Spectrum_Settings settings;
+	rs = SPECTRUM_GetSettings(&settings);
+	vbwRB = settings.vbw;
+	return vbwRB;
+}
+
+// /Get video bandwidth filter state
+static int get_vbwEn(bool vbwEnSts)
+{
+	ReturnStatus rs;
+	Spectrum_Settings settings;
+	rs = SPECTRUM_GetSettings(&settings);
+	vbwEnSts = settings.enableVBW;
+	return (int)vbwEnSts;
+}
+
+// Get trace length
+static long get_traceLen(int traceLenSts)
+{
+	ReturnStatus rs;
+	Spectrum_Settings settings;
+	rs = SPECTRUM_GetSettings(&settings);
+	traceLenSts = settings.traceLength;
+	return (long)traceLenSts;
+}
 
 // Define the center frequency value, in Hz.
 static double set_center_freq(double freq)
@@ -793,6 +826,9 @@ ss ss1 {
 	    printf("Span change to: %f\n",span);
 	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
+		
+		spanRB = get_span(spanRB);
+		pvPut(spanRB);
 				
 	} state opr
 
@@ -800,24 +836,27 @@ ss ss1 {
 	    printf("Rbw change to: %f\n",rbw);
 	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-	    rbwRB = rbw;
-	    pvPut(rbwRB);
+		rbwRB = get_rbw(rbwRB);
+		pvPut(rbwRB);
+		
 	} state opr
 
 	when (efTestAndClear(vbwFlag)) {
 	    printf("Vbw change to: %f\n",vbw);
 	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-	    vbwRB = vbw;
+	    vbwRB = get_vbw(vbwRB);
 	    pvPut(vbwRB);
+		
 	} state opr
 
 	when (efTestAndClear(vbwEnFlag)) {
 	    printf("Vbw enable: %s\n",vbwEn ? "ON" : "OFF");
 	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-	    vbwEnSts = vbwEn;
+	    vbwEnSts = get_vbwEn(vbwEnSts);
 	    pvPut(vbwEnSts);
+		
 	} state opr
 
 	when (efTestAndClear(traceLenFlag)) {
@@ -825,8 +864,9 @@ ss ss1 {
 	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
 		
-	    traceLenSts = traceLenOpt;
+	    traceLenSts = get_traceLen(traceLenSts);
 	    pvPut(traceLenSts);
+		
 	} state opr
 
 	when (efTestAndClear(freqFlag)) {
