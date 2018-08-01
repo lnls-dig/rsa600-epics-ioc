@@ -258,25 +258,8 @@ record(ao, "$(P)$(R)Vbw-SP"){
 
 # Trace Length
 #Trace length: 801, 2401, 4001, 8001,10401, 16001, 32001, and 64001 points
-record(mbbi, "$(P)$(R)TraceLenOpt-Sts") {
+record(longin, "$(P)$(R)TraceLenOpt-Sts") {
   field(DESC, "Trace length")
-  field(ZRVL, "801")
-  field(ZRST, "801")
-  field(ONVL, "2401")
-  field(ONST, "2401")
-  field(TWVL, "4001")
-  field(TWST, "4001")
-  field(THVL, "8001")
-  field(THST, "8001")
-  field(FRVL, "10401")
-  field(FRST, "10401")
-  field(FVVL, "16001")
-  field(FVST, "16001")
-  field(SXVL, "32001")
-  field(SXST, "32001")
-  field(SVVL, "64001")
-  field(SVST, "64001")
-  field(VAL, "0")
 }
 
 record(mbbo, "$(P)$(R)TraceLenOpt-Sel") {
@@ -297,7 +280,6 @@ record(mbbo, "$(P)$(R)TraceLenOpt-Sel") {
   field(SXST, "32001")
   field(SVVL, "64001")
   field(SVST, "64001")
-  field(VAL, "0")
 }
 
 # Initiate Spectrum Acquisition
