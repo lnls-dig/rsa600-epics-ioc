@@ -11,7 +11,7 @@ foreign ssId;
 %{
 
 // Define settings for the spectrum plotting.
-static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, int traceLen)
+static bool set_spectrum_settings(double span, double rbw, double vbw, int vbwEn, int traceLen)
 {
 	ReturnStatus rs;
 
@@ -34,6 +34,7 @@ static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, in
 	//printf("\nERROR: %s", DEVICE_GetErrorString(rs));
 
 	
+	//spanRB =  getSettings.span;
 	printf("\nSpan: %f\n", getSettings.span);
 	printf("\nRBW: %f\n", getSettings.rbw);
 	printf("\nVBW: %f\n", getSettings.vbw);
@@ -42,11 +43,27 @@ static bool spectrum_settings(double span, double rbw, double vbw, int vbwEn, in
 	printf("\nStart freq: %f\n", getSettings.actualStartFreq);
 	printf("\nStop freq: %f\n", getSettings.actualStopFreq);
 	printf("\nFreq step size: %f\n", getSettings.actualFreqStepSize);
-	
+
 }
 
+/*/ Get spectrum settings
+static bool get_spectrum_settings(SS_ID ssID, double* spanRB, VAR_ID spanRBId double, rbwRB, double vbwRB, int vbwEnSts, int traceLenSts)
+{
+	ReturnStatus rs;
+	Spectrum_Settings getSettingsettings;
+	rs = SPECTRUM_GetSettings(&getSettings);
+	
+	spanRB = getSettings.span;
+	//printf("\nSPAN_RB: %f\n", spanRB);
+	rbwRB = getSettings.rbw;
+	vbwRB = getSettings.vbw;
+	vbwEnSts = getSettings.enableVBW;
+	traceLenSts = getSettings.traceLength;
+	
+}*/
+
 // Define the center frequency value, in Hz.
-double set_center_freq(double freq)
+static double set_center_freq(double freq)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetCenterFreq(freq);
@@ -57,7 +74,7 @@ double set_center_freq(double freq)
 }
 
 // Read the center frequency value, in Hz.
-double get_center_freq(double freqRB)
+static double get_center_freq(double freqRB)
 {
 	ReturnStatus rs;
 	rs = CONFIG_GetCenterFreq(&freqRB);
@@ -68,7 +85,7 @@ double get_center_freq(double freqRB)
 }
 
 // Set the reference level value, in dBm.
-double set_ref_level(double refLevel)
+static double set_ref_level(double refLevel)
 {
 	ReturnStatus rs;
 	rs = CONFIG_SetReferenceLevel(refLevel);
@@ -80,7 +97,7 @@ double set_ref_level(double refLevel)
 }
 
 // Get the reference level value, in dBm.
-double get_ref_level(double refLevelRB)
+static double get_ref_level(double refLevelRB)
 {
 	ReturnStatus rs;
 	rs = CONFIG_GetReferenceLevel(&refLevelRB);
@@ -114,7 +131,7 @@ static void set_freq_array(SS_ID ssID, double* traceFreq, float* traceAmp)
 }
 
 // Get the spectrum trace
-int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int traceLength)
+static int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int traceLength)
 {
 	ReturnStatus rs;
 
@@ -186,7 +203,7 @@ int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFr
 
 }
 
-double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
+static double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
 {
 	int n, peak1i, peak2i;
 	peak1i = 0;
@@ -226,7 +243,7 @@ double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* Pe
 	return (PeakFreq[0]-PeakFreq[1]);
 }
 
-float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, float* SweepAmp, VAR_ID SweepAmpId, double* SweepFreq, VAR_ID SweepFreqId, double startfreq, double stopfreq, int points)
+static float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, float* SweepAmp, VAR_ID SweepAmpId, double* SweepFreq, VAR_ID SweepFreqId, double startfreq, double stopfreq, int points)
 {
 	ReturnStatus rs;
 
@@ -286,7 +303,7 @@ static void init()
 	
 }
 
-int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
+static int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
 {
 	//Search for devices.
 	int numDev;
@@ -439,7 +456,7 @@ int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR
 
 // Enable/Disable auto-attenuation.
 // As the equipment's API operates with bool values and the IOC with int values, this function also makes the needed conversion.
-int set_auto_attenuation(int AutoAtt)
+static int set_auto_attenuation(int AutoAtt)
 {
 	if (AutoAtt)
 		CONFIG_SetAutoAttenuationEnable(true);
@@ -451,14 +468,14 @@ int set_auto_attenuation(int AutoAtt)
 }
 
 // Get auto-attenuation state.
-int get_auto_attenuation(bool AutoAttSts)
+static int get_auto_attenuation(bool AutoAttSts)
 {
 	CONFIG_GetAutoAttenuationEnable(&AutoAttSts);
 	return (int)AutoAttSts;
 }
 	
 // Define the RF Input Attenuator value, in dB units.
-double RF_attenuation(double value)
+static double RF_attenuation(double value)
 {
 	CONFIG_SetRFAttenuator(value);
 	DEVICE_Run();
@@ -468,7 +485,7 @@ double RF_attenuation(double value)
 
 // Enable/Disable the RF Preamplifier.
 // As the equipment's API operates with bool values and the IOC with int values, this function also makes the needed conversion.
-int set_pre_amplifier(int PreAmp)
+static int set_pre_amplifier(int PreAmp)
 {
 	if (PreAmp)
 		CONFIG_SetRFPreampEnable(true);
@@ -480,7 +497,7 @@ int set_pre_amplifier(int PreAmp)
 }
 
 // Get preamplifier state.
-int get_pre_amplifier(bool PreAmpSts)
+static int get_pre_amplifier(bool PreAmpSts)
 {
 	CONFIG_GetRFPreampEnable(&PreAmpSts);
 	printf("\nRead Preamp %d\n", PreAmpSts);
@@ -755,8 +772,8 @@ ss ss1 {
 		refLevelRB = get_ref_level(refLevelRB);
 		pvPut(refLevelRB);
 		
-		//span = getSettings.span;
-		//pvPut(span, SYNC);
+		//spanRB = RBsettings.span;
+		//pvPut(spanRB);
 		
 		//rbw = getSettings.rbw;
 		//pvPut(rbw, SYNC);
@@ -774,44 +791,42 @@ ss ss1 {
 
 	when (efTestAndClear(spanFlag)) {
 	    printf("Span change to: %f\n",span);
-	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
-		
-		spanRB = span;
-		pvPut(spanRB);
+				
 	} state opr
 
 	when (efTestAndClear(rbwFlag)) {
 	    printf("Rbw change to: %f\n",rbw);
-	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-		rbwRB = rbw;
-		pvPut(rbwRB);
+	    rbwRB = rbw;
+	    pvPut(rbwRB);
 	} state opr
 
 	when (efTestAndClear(vbwFlag)) {
 	    printf("Vbw change to: %f\n",vbw);
-	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-		vbwRB = vbw;
-		pvPut(vbwRB);
+	    vbwRB = vbw;
+	    pvPut(vbwRB);
 	} state opr
 
 	when (efTestAndClear(vbwEnFlag)) {
 	    printf("Vbw enable: %s\n",vbwEn ? "ON" : "OFF");
-	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 		
-		vbwEnSts = vbwEn;
-		pvPut(vbwEnSts);
+	    vbwEnSts = vbwEn;
+	    pvPut(vbwEnSts);
 	} state opr
 
 	when (efTestAndClear(traceLenFlag)) {
 	    printf("TraceLen change to: %d\n",traceLenMenu[traceLenOpt]);
-	    spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
+	    set_spectrum_settings(span, rbw, vbw, vbwEn, traceLenMenu[traceLenOpt]);
 	    set_freq_array(ssId,traceFreq, traceAmp);
 		
-		traceLenSts = traceLenOpt;
-		pvPut(traceLenSts);
+	    traceLenSts = traceLenOpt;
+	    pvPut(traceLenSts);
 	} state opr
 
 	when (efTestAndClear(freqFlag)) {
@@ -819,40 +834,40 @@ ss ss1 {
 	    set_center_freq(freq);
 	    set_freq_array(ssId,traceFreq, traceAmp);
 		
-		freqRB = get_center_freq(freqRB);
-		pvPut(freqRB);
+	    freqRB = get_center_freq(freqRB);
+	    pvPut(freqRB);
 	} state opr
 
 	when (efTestAndClear(refLevelFlag)) {
 	    printf("Reference level change to: %f\n",refLevel);
 	    set_ref_level(refLevel);
 		
-		refLevelRB = get_ref_level(refLevelRB);
-		pvPut(refLevelRB);
+	    refLevelRB = get_ref_level(refLevelRB);
+	    pvPut(refLevelRB);
 	} state opr
 
 	when (efTestAndClear(AutoAttFlag)) {
-		set_auto_attenuation(AutoAtt);
-		RFAtt = RF_attenuation(RFAtt);
-		pvPut(RFAtt);
+	    set_auto_attenuation(AutoAtt);
+	    RFAtt = RF_attenuation(RFAtt);
+	    pvPut(RFAtt);
 		
-		AutoAttSts = get_auto_attenuation(AutoAttSts);
-		pvPut(AutoAttSts);
+	    AutoAttSts = get_auto_attenuation(AutoAttSts);
+	    pvPut(AutoAttSts);
 	} state opr
 
 	when (efTestAndClear(RFAttFlag)) {
-		RFAtt = RF_attenuation(RFAtt);
-		pvPut(RFAtt);
+	    RFAtt = RF_attenuation(RFAtt);
+	    pvPut(RFAtt);
 		
-		RFAttRB = RFAtt;
-		pvPut(RFAttRB);
+	    RFAttRB = RFAtt;
+	    pvPut(RFAttRB);
 	} state opr
 
 	when (efTestAndClear(PreAmpFlag)) {
-		set_pre_amplifier(PreAmp);
+	    set_pre_amplifier(PreAmp);
 		
-		PreAmpSts = get_pre_amplifier(PreAmpSts);
-		pvPut(PreAmpSts);
+	    PreAmpSts = get_pre_amplifier(PreAmpSts);
+	    pvPut(PreAmpSts);
 	} state opr
 
 	when (getSpec == 1) {
