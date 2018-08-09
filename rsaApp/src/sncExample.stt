@@ -236,6 +236,21 @@ static int get_spectrum(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* 
 
 }
 
+// Get spectrogram
+static void get_spectrogram(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int* Timestamp, VAR_ID TimestampId, int traceLength, int samples, int getSpec)
+{
+	while(getSpec == 1)
+	{
+		int n;
+		for(n = 0; n < samples; n++)
+		{
+			Timestamp[n] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId, traceLength);
+			//printf("\nTimestamp: %d\n", Timestamp[n]);
+			seq_pvPut(ssID, TimestampId, SYNC);
+		}
+	}
+}
+
 static double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, double* PeakFreq, VAR_ID PeakFreqId, float* traceAmp, double* traceFreq, int traceLen, int delta, double TuneFreq, double * TuneMeas)
 {
 	int n, peak1i, peak2i;
@@ -649,9 +664,23 @@ sync traceLenOpt traceLenFlag;
 int traceLenSts;
 assign traceLenSts to "{P}{R}TraceLenOpt-Sts";
 
+int getSpectra;
+assign getSpectra to "{P}{R}GetSpectra-Cmd";
+monitor getSpectra;
+
 int getSpec;
 assign getSpec to "{P}{R}GetSpec-Cmd";
 monitor getSpec;
+
+int samples;
+assign samples to "{P}{R}NrSpl-SP";
+monitor samples;
+
+//float specAmp[80100];//For now it is set for a traceLen of 801 points and a 100 spectrum samples.
+//assign specAmp to "{P}{R}SpecAmp-Mon";
+
+int Timestamp[100];
+assign Timestamp to "{P}{R}Timestamp-Mon";
 
 int Sweep;
 assign Sweep to "{P}{R}InitSwe-Cmd";
@@ -910,7 +939,7 @@ ss ss1 {
 	    pvPut(PreAmpSts);
 	} state opr
 
-	when (getSpec == 1) {
+	when (getSpectra == 1) {
 	    timestamp = get_spectrum(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), traceLenMenu[traceLenOpt]);
 	    if (timestamp != acqTimestamp)
 	    {
@@ -926,6 +955,11 @@ ss ss1 {
 	    pvPut(TuneDelta);
 	    tune_measurement(ssId, PeakAmp, pvIndex(PeakAmp), PeakFreq, pvIndex(PeakFreq), traceAmp, traceFreq, traceLenMenu[traceLenOpt], TuneDelta, TuneFreq, TuneMeas);
 	    pvPut(TuneMeas);
+	} state opr
+
+	when (getSpec == 1) {
+	    samples = 100;
+	    get_spectrogram(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), Timestamp, pvIndex(Timestamp), traceLenMenu[traceLenOpt], samples, getSpec);
 	} state opr
 
 	when (Sweep == 1) {

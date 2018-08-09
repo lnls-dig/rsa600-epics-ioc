@@ -282,13 +282,31 @@ record(mbbo, "$(P)$(R)TraceLenOpt-Sel") {
   field(SVST, "64001")
 }
 
-# Initiate Spectrum Acquisition
-record(bo, "$(P)$(R)GetSpec-Cmd"){
+# Enable/Disable Spectrum Acquisition
+record(bo, "$(P)$(R)GetSpectra-Cmd"){
   field(DESC, "Initiate spectrum acquisition")
 }
 
+# Enable/Disable Spectrogram Acquisition
+record(bo, "$(P)$(R)GetSpec-Cmd"){
+  field(DESC, "Initiate spectrogram acquisition")
+}
+
+# Number of spectrum samples
+record(ao, "$(P)$(R)NrSpl-SP") {
+  field(DESC, "Set Number of Spectrum Samples")
+  field(PREC, "0")
+}
+
+# Monitor Timestamp
+record(waveform, "$(P)$(R)Timestamp-Mon") {
+  field(DESC, "Spectrogram Timestamp Data")
+  field(NELM, "100")
+  field(FTVL, "DOUBLE")
+}
+
 # Initiate Sweep Spectrum Acquisition
-record(bo, "$(P)$(R)InitSwe-Cmd"){
+record(bo, "$(P)$(R)InitSwe-Cmd") {
   field(DESC, "Initiate sweep spectrum acquisition")
 }
 
