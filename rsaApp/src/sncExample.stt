@@ -291,66 +291,6 @@ static double tune_measurement(SS_ID ssID, float* PeakAmp, VAR_ID PeakAmpId, dou
 	return (PeakFreq[0]-PeakFreq[1]);
 }
 
-static float get_spectrum_sweep(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, float* SweepAmp, VAR_ID SweepAmpId, double* SweepFreq, VAR_ID SweepFreqId, double startfreq, double stopfreq, int points)
-{
-	ReturnStatus rs;
-
-	int n;
-	int dfreq = (int)((stopfreq-startfreq)/(points-1));
-	printf("\nStep freq: %d, Points: %d\n", dfreq, points);
-	double freq;
-	int numpoint = 0;
-	float maxAmp;
-	int maxAmpIndex;
-
-	for(freq = startfreq; freq <= stopfreq; freq=freq+dfreq)
-	{
-		rs = CONFIG_SetCenterFreq(freq);
-		
-		SweepAmp[numpoint] = get_spectrum(ssID, traceAmp, traceAmpId, traceFreq, traceFreqId, 801);
-		SweepFreq[numpoint] = freq;
-		printf("\nFreq: %f, Amp: %f, Point: %d\n", SweepAmp[numpoint], SweepFreq[numpoint], numpoint);
-		
-		seq_pvPut(ssID, SweepAmpId, SYNC);
-	
-		seq_pvPut(ssID, SweepFreqId, SYNC);
-		numpoint++;
-	}
-	
-	for (n = numpoint; n < 1000; n++)
-	{
-		SweepFreq[n] = SweepFreq[numpoint-1];
-		SweepAmp[n] = SweepAmp[numpoint-1];
-	}
-
-	seq_pvPut(ssID, SweepAmpId, SYNC);
-
-	seq_pvPut(ssID, SweepFreqId, SYNC);
-}
-
-static void init()
-{
-	ReturnStatus rs;
-	int numDev;
-	int devID[DEVSRCH_MAX_NUM_DEVICES];
-	char devSN[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_SERIAL_MAX_STRLEN];
-	char devType[DEVSRCH_MAX_NUM_DEVICES][DEVSRCH_TYPE_MAX_STRLEN];
-	rs = DEVICE_Search(&numDev, devID, devSN, devType);
-	
-	printf("\nDevices detected: %d\n",numDev);
-
-	rs = DEVICE_Connect(devID[0]);
-	
-	if (rs)
-	{
-		printf("\nERROR: %s", DEVICE_GetErrorString(rs));
-	}
-	//If there is no error connecting, then print the name of the connected device.
-	else
-		printf("\nCONNECTED TO: %s", devType[0]);
-	
-}
-
 static int init2(SS_ID ssID, float* traceAmp, VAR_ID traceAmpId, double* traceFreq, VAR_ID traceFreqId, int deviceID)
 {
 	//Search for devices.
@@ -583,18 +523,6 @@ sync refLevel refLevelFlag;
 double refLevelRB;
 assign refLevelRB to "{P}{R}RefLvl-RB";
 
-double StartFreq;
-assign StartFreq to "{P}{R}StartFreq-SP";
-monitor StartFreq;
-
-double StopFreq;
-assign StopFreq to "{P}{R}StopFreq-SP";
-monitor StopFreq;
-
-int SweepPoints;
-assign SweepPoints to "{P}{R}SwePoints-SP";
-monitor SweepPoints;
-
 double maxSpan;
 assign maxSpan to "{P}{R}Span-SP.DRVH";
 
@@ -682,10 +610,6 @@ monitor samples;
 int Timestamp[100];
 assign Timestamp to "{P}{R}Timestamp-Mon";
 
-int Sweep;
-assign Sweep to "{P}{R}InitSwe-Cmd";
-monitor Sweep;
-
 float traceAmp[64001];
 assign traceAmp to "{P}{R}TraceAmp-Mon";
 
@@ -697,12 +621,6 @@ assign PeakAmp to "{P}{R}PeakAmp-Mon";
 
 double PeakFreq[2];
 assign PeakFreq to "{P}{R}PeakFreq-Mon";
-
-float SweepAmp[1000];
-assign SweepAmp to "{P}{R}SweAmpData-Mon";
-
-double SweepFreq[1000];
-assign SweepFreq to "{P}{R}SweFreqData-Mon";
 
 int AutoAtt;
 assign AutoAtt to "{P}{R}EnblAutoAtt-Sel";
@@ -834,18 +752,6 @@ ss ss1 {
 		refLevelRB = get_ref_level(refLevelRB);
 		pvPut(refLevelRB);
 		
-		//spanRB = RBsettings.span;
-		//pvPut(spanRB);
-		
-		//rbw = getSettings.rbw;
-		//pvPut(rbw, SYNC);
-		
-		//vbw = getSettings.vbw;
-		//pvPut(vbw, SYNC);
-
-		//traceLen = getSettings.traceLength;
-		//pvPut(traceLen, SYNC);
-
 	} state init
 
     }
@@ -961,12 +867,5 @@ ss ss1 {
 	    samples = 100;
 	    get_spectrogram(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), Timestamp, pvIndex(Timestamp), traceLenMenu[traceLenOpt], samples, getSpec);
 	} state opr
-
-	when (Sweep == 1) {
-	    get_spectrum_sweep(ssId, traceAmp, pvIndex(traceAmp), traceFreq, pvIndex(traceFreq), SweepAmp, pvIndex(SweepAmp), SweepFreq, pvIndex(SweepFreq), StartFreq, StopFreq, SweepPoints);
-	    Sweep = 0;
-	    pvPut(Sweep);
-	} state opr
-
     }
 }

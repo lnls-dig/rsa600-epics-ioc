@@ -79,136 +79,6 @@ record(ao, "$(P)$(R)RefLvl-SP"){
   field(VAL, "0")
 }
 
-# Start Frequency
-record(ai, "$(P)$(R)StartFreq-RB"){
-  field(DESC, "Get sweep start frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119286695")
-}
-
-record(ao, "$(P)$(R)StartFreq-SP"){
-  field(DESC, "Set sweep start frequency")
-  field(DRVH, "7500000000")
-  field(DRVL, "9000")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119286695")
-  field(OUT, "$(P)$(R)StopFreq.DRVL PP")
-  field(FLNK, "$(P)$(R)SweStepCalc")
-}
-
-record(calcout, "$(P)$(R)CalcStartFreq"){
-  field(DESC, "Calculate sweep start frequency")
-  field(INPA, "$(P)$(R)SweFreq")
-  field(INPB, "$(P)$(R)SweSpan")
-  field(CALC, "A-B/2")
-  field(OUT, "$(P)$(R)StartFreq PP")
-  field(FLNK, "$(P)$(R)StopFreqCalc")
-}
-
-# Stop Frequency
-record(ai, "$(P)$(R)StopFreq-RB"){
-  field(DESC, "Get sweep stop frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119986695")
-}
-
-record(ao, "$(P)$(R)StopFreq-SP"){
-  field(DESC, "Set sweep stop frequency")
-  field(DRVH, "7500000000")
-  field(DRVL, "9000")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119986695")
-}
-
-record(calcout, "$(P)$(R)CalcStopFreq"){
-  field(DESC, "Calculate sweep stop frequency")
-  field(INPA, "$(P)$(R)SweFreq")
-  field(INPB, "$(P)$(R)SweSpan")
-  field(CALC, "A+B/2")
-  field(OUT, "$(P)$(R)StopFreq PP")
-}
-
-# Sweep Frequency
-record(ai, "$(P)$(R)SweFreq-RB"){
-  field(DESC, "Get center sweep frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119636695")
-  field(FLNK, "$(P)$(R)StartFreqCalc")
-}
-
-record(ao, "$(P)$(R)SweFreq-SP"){
-  field(DESC, "Set center sweep frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119636695")
-  field(FLNK, "$(P)$(R)CalcStartFreq")
-}
-
-# Sweep Span
-record(ai, "$(P)$(R)SweSpan-RB"){
-  field(DESC, "Get span sweep frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119986695")
-  field(FLNK, "$(P)$(R)StartFreqCalc")
-}
-
-record(ao, "$(P)$(R)SweSpan-SP"){
-  field(DESC, "Set span sweep frequency")
-  field(PREC, "1")
-  field(EGU, "Hz")
-  field(VAL, "119986695")
-  field(FLNK, "$(P)$(R)StartFreqCalc")
-
-}
-record(calcout, "$(P)$(R)StartFreqCalc"){
-  field(DESC, "Start sweep frequency calc")
-  field(INPA, "$(P)$(R)SweepFreq")
-  field(INPB, "$(P)$(R)SweepSpan")
-  field(CALC, "A-B/2")
-  field(OUT, "$(P)$(R)StartFreq PP")
-  field(FLNK, "$(P)$(R)StopFreqCalc")
-}
-
-record(calcout, "$(P)$(R)StopFreqCalc"){
-  field(DESC, "Stop sweep frequency calc")
-  field(INPA, "$(P)$(R)SweepFreq")
-  field(INPB, "$(P)$(R)SweepSpan")
-  field(CALC, "A+B/2")
-  field(OUT, "$(P)$(R)StopFreq PP")
-}
-
-# Number of Sweep Points
-record(ai, "$(P)$(R)SwePoints-RB"){
-  field(DESC, "Get sweep points")
-  field(PREC, "0")
-  field(VAL, "25")
-}
-
-record(ao, "$(P)$(R)SwePoints-SP"){
-  field(DESC, "Set Sweep points")
-  field(DRVH, "1000")
-  field(DRVL, "1")
-  field(PREC, "0")
-  field(VAL, "25")
-  field(FLNK, "$(P)$(R)SweStepCalc")
-}
-
-# Sweep Frequency Step
-record(calc, "$(P)$(R)SweStepCalc"){
-  field(DESC, "Calculate sweep frequency step")
-  field(INPA, "$(P)$(R)SwePoints")
-  field(INPB, "$(P)$(R)SweSpan")
-  field(CALC, "B/(A-1)")
-  field(EGU, "Hz")
-  field(PINI, "1")
-}
-
 # Resolution Bandwidth
 record(ai, "$(P)$(R)Rbw-RB"){
   field(DESC, "Get resolution bandwidth")
@@ -305,11 +175,6 @@ record(waveform, "$(P)$(R)Timestamp-Mon") {
   field(FTVL, "DOUBLE")
 }
 
-# Initiate Sweep Spectrum Acquisition
-record(bo, "$(P)$(R)InitSwe-Cmd") {
-  field(DESC, "Initiate sweep spectrum acquisition")
-}
-
 # Amplitude Data
 record(waveform, "$(P)$(R)TraceAmp-Mon") {
   field(DESC, "Spectrum trace amplitude data")
@@ -340,22 +205,6 @@ record(waveform, "$(P)$(R)PeakFreq-Mon") {
   field(NELM, "2")
   field(FTVL, "DOUBLE")
   field(EGU, "MHz")
-}
-
-# Sweep Amplitude Data
-record(waveform, "$(P)$(R)SweAmpData-Mon") {
-  field(DESC, "Sweep amplitude data")
-  field(NELM, "1000")
-  field(FTVL, "FLOAT")
-  field(EGU, "dBm")
-}
-
-# Sweep Frequency Data
-record(waveform, "$(P)$(R)SweFreqData-Mon") {
-  field(DESC, "Sweep frequency data")
-  field(NELM, "1000")
-  field(FTVL, "DOUBLE")
-  field(EGU, "Hz")
 }
 
 # Tune Measurement
@@ -415,7 +264,6 @@ record(ao, "$(P)$(R)InAtt-SP"){
   field(EGU, "dB")
   field(VAL, "0")
 }
-
 
 # Input Preamplifier Value
 record(bi, "$(P)$(R)EnblPreAmp-Sts"){
