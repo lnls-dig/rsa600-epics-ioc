@@ -168,6 +168,14 @@ record(ao, "$(P)$(R)NrSpl-SP") {
   field(PREC, "0")
 }
 
+# Amplitude Spectrogram Data
+record(waveform, "$(P)$(R)SpecAmp-Mon") {
+  field(DESC, "Spectrogram trace amplitude data")
+  field(NELM, "8001")
+  field(FTVL, "FLOAT")
+  field(EGU, "dBm")
+}
+
 # Monitor Timestamp
 record(waveform, "$(P)$(R)Timestamp-Mon") {
   field(DESC, "Spectrogram Timestamp Data")
@@ -178,7 +186,7 @@ record(waveform, "$(P)$(R)Timestamp-Mon") {
 # Amplitude Data
 record(waveform, "$(P)$(R)TraceAmp-Mon") {
   field(DESC, "Spectrum trace amplitude data")
-  field(NELM, "64001")
+  field(NELM, "2401")
   field(FTVL, "FLOAT")
   field(EGU, "dBm")
 }
